@@ -3,6 +3,9 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from .auth_serializers import SignupSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.permissions import IsAuthenticated
 
 from .models import Job
 from .serializers import JobSerializer
@@ -46,8 +49,34 @@ class JobCreateAPIView(APIView):
 
 class UserTestAPIView(APIView):
 
-    def get(self, request):
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request):
         return Response({
-        "message": "User API Working"
-    })
+            "message": "Protected API Working",
+            "user": request.user.username,
+            "role": request.user.role,
+        })
+class SignupAPIView(APIView):
+
+    def post(self, request):
+
+        serializer = SignupSerializer(
+            data=request.data
+        )
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+class LoginAPIView(TokenObtainPairView):
+    pass
