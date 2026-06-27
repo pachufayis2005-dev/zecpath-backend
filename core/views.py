@@ -6,6 +6,7 @@ from rest_framework import status
 from .auth_serializers import SignupSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
+from .permissions import IsEmployer, IsAdmin, IsCandidate
 
 from .models import Job
 from .serializers import JobSerializer
@@ -27,6 +28,11 @@ class JobListAPIView(APIView):
 
 class JobCreateAPIView(APIView):
 
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer
+    ]
+
     def post(self, request):
 
         serializer = JobSerializer(
@@ -35,7 +41,9 @@ class JobCreateAPIView(APIView):
 
         if serializer.is_valid():
 
-            serializer.save()
+            serializer.save(
+                employer=request.user.employer
+            )
 
             return Response(
                 serializer.data,
@@ -46,7 +54,6 @@ class JobCreateAPIView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
-
 class UserTestAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -78,5 +85,17 @@ class SignupAPIView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+class AdminAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin
+    ]
+
+    def get(self, request):
+        return Response({
+            "message": "Admin Access Granted"
+        })
+    
 class LoginAPIView(TokenObtainPairView):
     pass

@@ -3,6 +3,16 @@ from .models import Job
 
 
 class JobSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Job
-        fields = '__all__'
+        fields = [
+            "id",
+            "title",
+            "description",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "created_at",
+        ]
