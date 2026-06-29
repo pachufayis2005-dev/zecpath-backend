@@ -50,11 +50,29 @@ class Employer(models.Model):
         on_delete=models.CASCADE
     )
 
-    company_name = models.CharField(max_length=200)
+    company_name = models.CharField(
+        max_length=200
+    )
+
+    domain = models.CharField(
+        max_length=200,
+        blank=True
+    )
+
+    company_size = models.IntegerField(
+        default=0
+    )
+
+    is_verified = models.BooleanField(
+        default=False
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
 
     def __str__(self):
         return self.company_name
-
 
 class Candidate(models.Model):
 
@@ -63,12 +81,29 @@ class Candidate(models.Model):
         on_delete=models.CASCADE
     )
 
-    skills = models.TextField()
+    skills = models.TextField(
+        blank=True
+    )
+
+    education = models.TextField(
+        blank=True
+    )
+
+    experience = models.CharField(
+        max_length=100,
+        blank=True
+    )
+
+    expected_salary = models.IntegerField(
+        default=0
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
 
     def __str__(self):
         return self.user.username
-
-
 class Job(models.Model):
 
     employer = models.ForeignKey(
