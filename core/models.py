@@ -81,21 +81,26 @@ class Candidate(models.Model):
         on_delete=models.CASCADE
     )
 
-    skills = models.TextField(
-        blank=True
-    )
+    skills = models.TextField()
 
-    education = models.TextField(
+    education = models.CharField(
+        max_length=200,
         blank=True
     )
 
     experience = models.CharField(
-        max_length=100,
+        max_length=200,
         blank=True
     )
 
     expected_salary = models.IntegerField(
         default=0
+    )
+
+    resume = models.FileField(
+        upload_to='resumes/',
+        blank=True,
+        null=True
     )
 
     is_active = models.BooleanField(
