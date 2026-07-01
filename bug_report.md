@@ -150,3 +150,19 @@ The issue was caused by an invalid/expired authentication state rather than a ba
 
 Status:
 RESOLVED
+
+500 Internal Server Error Investigation
+
+Initial Observation:
+POST /api/jobs/create/ returned 500.
+
+Root Cause:
+Expired/invalid authentication token was used.
+
+Retest:
+Using a valid employer token returned:
+
+201 Created
+
+Status:
+Resolved
