@@ -132,3 +132,21 @@ Django HTML Debug Error Page
 
 Status:
 BUG FOUND
+
+## Internal Server Error Investigation
+
+Endpoint:
+POST /api/jobs/create/
+
+Observation:
+A 500 Internal Server Error was observed during early testing.
+
+Re-testing after obtaining a valid employer JWT token produced:
+
+201 Created
+
+Conclusion:
+The issue was caused by an invalid/expired authentication state rather than a backend code defect.
+
+Status:
+RESOLVED
