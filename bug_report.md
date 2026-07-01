@@ -26,3 +26,109 @@ Response:
 Status:
 PASS
 
+## Test Case 2: Candidate Accessing Admin API
+
+Endpoint:
+GET /api/admin/test/
+
+Action:
+Candidate user attempted to access admin-only API.
+
+Expected Result:
+Access denied.
+
+Actual Result:
+403 Forbidden returned.
+
+Response:
+{
+    "detail": "You do not have permission to perform this action."
+}
+
+Status:
+PASS
+
+## Status Code Testing
+
+### 200 OK
+Endpoint:
+GET /api/candidate/profile/
+
+Status:
+PASS
+
+---
+
+### 201 Created
+Endpoint:
+POST /api/signup/
+
+Status:
+PASS
+
+---
+
+### 400 Bad Request
+Endpoint:
+POST /api/signup/
+
+Cause:
+Invalid role value.
+
+Status:
+PASS
+
+---
+
+### 403 Forbidden
+Endpoint:
+GET /api/admin/test/
+
+Cause:
+Role violation.
+
+Status:
+PASS
+
+### Invalid Token Test
+
+Endpoint:
+GET /api/candidate/profile/
+
+Action:
+Provided an expired/invalid JWT access token.
+
+Expected:
+Authentication should fail.
+
+Actual:
+403 Forbidden returned.
+
+Response:
+{
+    "detail": "Given token not valid for any token type",
+    "code": "token_not_valid"
+}
+
+Status:
+PASS
+
+### Test Case: Internal Server Error
+
+Endpoint:
+POST /api/jobs/create/
+
+Action:
+Attempted to create a job.
+
+Expected:
+Job creation success.
+
+Actual:
+500 Internal Server Error returned.
+
+Response:
+Django HTML Debug Error Page
+
+Status:
+BUG FOUND
