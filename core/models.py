@@ -109,22 +109,41 @@ class Candidate(models.Model):
 
     def __str__(self):
         return self.user.username
+    
 class Job(models.Model):
+
+    ACTIVE = "ACTIVE"
+    CLOSED = "CLOSED"
+
+    STATUS_CHOICES = [
+        (ACTIVE, "Active"),
+        (CLOSED, "Closed"),
+    ]
 
     employer = models.ForeignKey(
         Employer,
         on_delete=models.CASCADE
     )
 
-    title = models.CharField(max_length=200)
+    title = models.CharField(
+        max_length=200,
+        db_index=True
+    )
 
     description = models.TextField()
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=ACTIVE
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
         return self.title
-
 
 class Application(models.Model):
 

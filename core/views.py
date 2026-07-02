@@ -1,5 +1,6 @@
 from django.shortcuts import render
 
+from .pagination import JobPagination
 from .profile_serializers import (CandidateProfileSerializer,EmployerProfileSerializer,)
 from .permissions import IsCandidate, IsEmployer, IsAdmin
 from .models import Candidate, Employer
@@ -18,14 +19,49 @@ class JobListAPIView(APIView):
 
     def get(self, request):
 
-        jobs = Job.objects.all()
+        jobs = Job.objects.select_related(
+            "employer"
+        ).all()
+
+        # Search
+        search = request.GET.get("search")
+
+        if search:
+            jobs = jobs.filter(
+                title__icontains=search
+            )
+
+        # Status filter
+        status_filter = request.GET.get("status")
+
+        if status_filter:
+            jobs = jobs.filter(
+                status=status_filter
+            )
+
+        # Date filter
+        date_filter = request.GET.get("date")
+
+        if date_filter:
+            jobs = jobs.filter(
+                created_at__date=date_filter
+            )
+
+        paginator = JobPagination()
+
+        paginated_jobs = paginator.paginate_queryset(
+            jobs,
+            request
+        )
 
         serializer = JobSerializer(
-            jobs,
+            paginated_jobs,
             many=True
         )
 
-        return Response(serializer.data)
+        return paginator.get_paginated_response(
+            serializer.data
+        )
 
 
 class JobCreateAPIView(APIView):
@@ -56,6 +92,7 @@ class JobCreateAPIView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+
 class UserTestAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
