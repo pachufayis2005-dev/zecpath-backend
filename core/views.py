@@ -236,3 +236,112 @@ class EmployerProfileAPIView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+
+class JobUpdateAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer
+    ]
+
+    def put(self, request, pk):
+
+        try:
+            job = Job.objects.get(
+                id=pk
+            )
+
+        except Job.DoesNotExist:
+
+            return Response(
+                {
+                    "error": "Job not found"
+                },
+                status=404
+            )
+
+        # OWNERSHIP VALIDATION
+        if job.employer != request.user.employer:
+
+            return Response(
+                {
+                    "error": "Not your job"
+                },
+                status=403
+            )
+
+        serializer = JobSerializer(
+            job,
+            data=request.data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(
+                serializer.data
+            )
+
+        return Response(
+            serializer.errors,
+            status=400
+        )
+class JobStatusAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer
+    ]
+
+    def patch(self, request, pk):
+
+        try:
+            job = Job.objects.get(
+                id=pk
+            )
+
+        except Job.DoesNotExist:
+
+            return Response(
+                {
+                    "error": "Job not found"
+                },
+                status=404
+            )
+
+        # OWNERSHIP VALIDATION
+        if job.employer != request.user.employer:
+
+            return Response(
+                {
+                    "error": "Not your job"
+                },
+                status=403
+            )
+
+        status_value = request.data.get(
+            "status"
+        )
+
+        if status_value not in [
+            "ACTIVE",
+            "CLOSED"
+        ]:
+
+            return Response(
+                {
+                    "error": "Invalid status"
+                },
+                status=400
+            )
+
+        job.status = status_value
+
+        job.save()
+
+        return Response({
+            "message": "Job status updated",
+            "status": job.status
+        })

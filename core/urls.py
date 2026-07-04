@@ -8,6 +8,8 @@ from .views import (
     AdminAPIView,
     CandidateProfileAPIView,
     EmployerProfileAPIView,
+    JobUpdateAPIView,
+    JobStatusAPIView,
 )
 
 urlpatterns = [
@@ -19,4 +21,6 @@ urlpatterns = [
     path('admin/test/', AdminAPIView.as_view()),
     path('candidate/profile/',CandidateProfileAPIView.as_view()),
     path('employer/profile/',EmployerProfileAPIView.as_view()),
+    path("jobs/<int:pk>/update/",JobUpdateAPIView.as_view()),
+    path("jobs/<int:pk>/status/",JobStatusAPIView.as_view()),
 ]

@@ -120,6 +120,18 @@ class Job(models.Model):
         (CLOSED, "Closed"),
     ]
 
+    FULL_TIME = "FULL_TIME"
+    PART_TIME = "PART_TIME"
+    INTERNSHIP = "INTERNSHIP"
+    CONTRACT = "CONTRACT"
+
+    JOB_TYPE_CHOICES = [
+        (FULL_TIME, "Full Time"),
+        (PART_TIME, "Part Time"),
+        (INTERNSHIP, "Internship"),
+        (CONTRACT, "Contract"),
+    ]
+
     employer = models.ForeignKey(
         Employer,
         on_delete=models.CASCADE
@@ -132,6 +144,30 @@ class Job(models.Model):
 
     description = models.TextField()
 
+    skills = models.TextField(
+        blank=True
+    )
+
+    experience = models.CharField(
+        max_length=100,
+        blank=True
+    )
+
+    salary = models.IntegerField(
+        default=0
+    )
+
+    location = models.CharField(
+        max_length=200,
+        blank=True
+    )
+
+    job_type = models.CharField(
+        max_length=20,
+        choices=JOB_TYPE_CHOICES,
+        default=FULL_TIME
+    )
+
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
@@ -142,9 +178,12 @@ class Job(models.Model):
         auto_now_add=True
     )
 
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
     def __str__(self):
         return self.title
-
 class Application(models.Model):
 
     candidate = models.ForeignKey(
