@@ -19,6 +19,7 @@ class JobSerializer(serializers.ModelSerializer):
             "status",
             "created_at",
             "updated_at",
+            "is_featured",
         ]
 
         read_only_fields = [

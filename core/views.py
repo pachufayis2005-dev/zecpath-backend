@@ -10,6 +10,7 @@ from rest_framework import status
 from .auth_serializers import SignupSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Q
 
 from .models import Job
 from .serializers import JobSerializer
@@ -24,11 +25,64 @@ class JobListAPIView(APIView):
         ).all()
 
         # Search
+
         search = request.GET.get("search")
 
         if search:
             jobs = jobs.filter(
-                title__icontains=search
+            Q(title__icontains=search) |
+            Q(description__icontains=search) |
+            Q(skills__icontains=search)
+    )
+
+        # Skill filter
+        skill = request.GET.get(
+        "skill"
+            )
+
+        if skill:
+            jobs = jobs.filter(
+            skills__icontains=skill
+            )
+
+        # Experience filter
+        experience = request.GET.get(
+    "experience"
+)
+
+        if experience:
+            jobs = jobs.filter(
+            experience__icontains=experience
+            )
+
+        # Salary filter
+        salary = request.GET.get(
+    "salary"
+)
+
+        if salary:
+            jobs = jobs.filter(
+            salary__gte=salary
+            )
+
+        # Location filter
+        location = request.GET.get(
+            "location"
+            )
+
+        if location:
+            jobs = jobs.filter(
+            location__icontains=location
+            )
+
+        # Job type filter
+        job_type = request.GET.get(
+            "job_type"
+            )
+
+        if job_type:
+            jobs = jobs.filter(
+            job_type=job_type
             )
 
         # Status filter
@@ -91,6 +145,43 @@ class JobCreateAPIView(APIView):
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
+        )
+
+class FeaturedJobAPIView(APIView):
+
+    def get(self, request):
+
+        jobs = Job.objects.filter(
+            status=Job.ACTIVE,
+            is_featured=True
+        ).order_by(
+            "-created_at"
+        )
+
+        serializer = JobSerializer(
+            jobs,
+            many=True
+        )
+
+        return Response(serializer.data)
+
+class LatestJobAPIView(APIView):
+
+    def get(self, request):
+
+        jobs = Job.objects.filter(
+            status=Job.ACTIVE
+        ).order_by(
+            "-created_at"
+        )[:5]
+
+        serializer = JobSerializer(
+            jobs,
+            many=True
+        )
+
+        return Response(
+            serializer.data
         )
 
 class UserTestAPIView(APIView):

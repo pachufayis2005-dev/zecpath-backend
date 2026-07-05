@@ -168,11 +168,17 @@ class Job(models.Model):
         default=FULL_TIME
     )
 
+
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
         default=ACTIVE
     )
+
+    is_featured = models.BooleanField(
+        default=False
+    )
+    
 
     created_at = models.DateTimeField(
         auto_now_add=True
