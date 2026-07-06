@@ -190,7 +190,20 @@ class Job(models.Model):
 
     def __str__(self):
         return self.title
+
 class Application(models.Model):
+
+    APPLIED = "APPLIED"
+    UNDER_REVIEW = "UNDER_REVIEW"
+    SHORTLISTED = "SHORTLISTED"
+    REJECTED = "REJECTED"
+
+    STATUS_CHOICES = [
+        (APPLIED, "Applied"),
+        (UNDER_REVIEW, "Under Review"),
+        (SHORTLISTED, "Shortlisted"),
+        (REJECTED, "Rejected"),
+    ]
 
     candidate = models.ForeignKey(
         Candidate,
@@ -202,9 +215,24 @@ class Application(models.Model):
         on_delete=models.CASCADE
     )
 
+    resume_snapshot = models.TextField(
+        blank=True
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=APPLIED
+    )
+
     applied_at = models.DateTimeField(
         auto_now_add=True
     )
 
     def __str__(self):
-        return f"{self.candidate} - {self.job}"
+        return (
+            f"{self.candidate.user.username}"
+            f" -> "
+            f"{self.job.title}"
+        )
+    

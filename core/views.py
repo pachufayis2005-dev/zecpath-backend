@@ -11,6 +11,8 @@ from .auth_serializers import SignupSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
+from .serializers import ApplicationSerializer
+from .models import Application
 
 from .models import Job
 from .serializers import JobSerializer
@@ -436,3 +438,130 @@ class JobStatusAPIView(APIView):
             "message": "Job status updated",
             "status": job.status
         })
+
+class ApplyJobAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsCandidate
+    ]
+
+    def post(self, request, pk):
+
+        # Find job
+        try:
+            job = Job.objects.get(
+                id=pk
+            )
+
+        except Job.DoesNotExist:
+
+            return Response(
+                {
+                    "error": "Job not found"
+                },
+                status=404
+            )
+
+        # Check if job is active
+        if job.status != Job.ACTIVE:
+
+            return Response(
+                {
+                    "error": "Job is closed"
+                },
+                status=400
+            )
+
+        # Duplicate prevention
+        if Application.objects.filter(
+            candidate=request.user.candidate,
+            job=job
+        ).exists():
+
+            return Response(
+                {
+                    "error": "Already applied"
+                },
+                status=400
+            )
+
+        # Resume binding
+        resume = ""
+
+        if request.user.candidate.resume:
+            resume = str(
+                request.user.candidate.resume
+            )
+
+        application = Application.objects.create(
+            candidate=request.user.candidate,
+            job=job,
+            resume_snapshot=resume
+        )
+
+        serializer = ApplicationSerializer(
+            application
+        )
+
+        return Response(
+            serializer.data,
+            status=201
+        )
+
+class ApplicationHistoryAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsCandidate
+    ]
+
+    def get(self, request):
+
+        applications = Application.objects.filter(
+            candidate=request.user.candidate
+        ).select_related(
+            "job"
+        ).order_by(
+            "-applied_at"
+        )
+
+        serializer = ApplicationSerializer(
+            applications,
+            many=True
+        )
+
+        return Response(
+            serializer.data
+        )
+
+class AppliedJobsAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsCandidate
+    ]
+
+    def get(self, request):
+
+        applications = Application.objects.filter(
+            candidate=request.user.candidate
+        ).select_related(
+            "job"
+        )
+
+        jobs = []
+
+        for application in applications:
+            jobs.append(
+                application.job
+            )
+
+        serializer = JobSerializer(
+            jobs,
+            many=True
+        )
+
+        return Response(
+            serializer.data
+        )
