@@ -565,3 +565,64 @@ class AppliedJobsAPIView(APIView):
         return Response(
             serializer.data
         )
+
+class ApplicationStatusUpdateAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer
+    ]
+
+    def patch(self, request, pk):
+
+        try:
+            application = Application.objects.select_related(
+                "job",
+                "candidate"
+            ).get(id=pk)
+
+        except Application.DoesNotExist:
+
+            return Response(
+                {
+                    "error": "Application not found"
+                },
+                status=404
+            )
+
+        # Ownership validation
+        if application.job.employer != request.user.employer:
+
+            return Response(
+                {
+                    "error": "Not your application"
+                },
+                status=403
+            )
+
+        new_status = request.data.get("status")
+
+        valid_statuses = [
+            Application.APPLIED,
+            Application.SHORTLISTED,
+            Application.INTERVIEW_SCHEDULED,
+            Application.REJECTED,
+            Application.SELECTED,
+        ]
+
+        if new_status not in valid_statuses:
+
+            return Response(
+                {
+                    "error": "Invalid status"
+                },
+                status=400
+            )
+
+        application.status = new_status
+        application.save()
+
+        return Response({
+            "message": "Application status updated",
+            "status": application.status
+        })

@@ -15,6 +15,7 @@ from .views import (
     ApplyJobAPIView,
     ApplicationHistoryAPIView,
     AppliedJobsAPIView,
+    ApplicationStatusUpdateAPIView,
 )
 
 urlpatterns = [
@@ -24,14 +25,14 @@ urlpatterns = [
     path('jobs/create/', JobCreateAPIView.as_view()),
     path('users/test/', UserTestAPIView.as_view()),
     path('admin/test/', AdminAPIView.as_view()),
-    path('candidate/profile/',CandidateProfileAPIView.as_view()),
-    path('employer/profile/',EmployerProfileAPIView.as_view()),
-    path("jobs/<int:pk>/update/",JobUpdateAPIView.as_view()),
-    path("jobs/<int:pk>/status/",JobStatusAPIView.as_view()),
-    path("jobs/featured/",FeaturedJobAPIView.as_view()),
-    path("jobs/latest/",LatestJobAPIView.as_view()),
-    path("jobs/<int:pk>/apply/",ApplyJobAPIView.as_view()),
-    path("applications/",ApplicationHistoryAPIView.as_view()),
-    path("applications/jobs/",AppliedJobsAPIView.as_view()
-),
+    path('candidate/profile/', CandidateProfileAPIView.as_view()),
+    path('employer/profile/', EmployerProfileAPIView.as_view()),
+    path("jobs/<int:pk>/update/", JobUpdateAPIView.as_view()),
+    path("jobs/<int:pk>/status/", JobStatusAPIView.as_view()),
+    path("jobs/featured/", FeaturedJobAPIView.as_view()),
+    path("jobs/latest/", LatestJobAPIView.as_view()),
+    path("jobs/<int:pk>/apply/", ApplyJobAPIView.as_view()),
+    path("applications/", ApplicationHistoryAPIView.as_view()),
+    path("applications/jobs/", AppliedJobsAPIView.as_view()),
+    path("applications/<int:pk>/status/", ApplicationStatusUpdateAPIView.as_view()),
 ]

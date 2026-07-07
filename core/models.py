@@ -194,17 +194,18 @@ class Job(models.Model):
 class Application(models.Model):
 
     APPLIED = "APPLIED"
-    UNDER_REVIEW = "UNDER_REVIEW"
     SHORTLISTED = "SHORTLISTED"
+    INTERVIEW_SCHEDULED = "INTERVIEW_SCHEDULED"
     REJECTED = "REJECTED"
+    SELECTED = "SELECTED"
 
     STATUS_CHOICES = [
-        (APPLIED, "Applied"),
-        (UNDER_REVIEW, "Under Review"),
-        (SHORTLISTED, "Shortlisted"),
-        (REJECTED, "Rejected"),
-    ]
-
+    (APPLIED, "Applied"),
+    (SHORTLISTED, "Shortlisted"),
+    (INTERVIEW_SCHEDULED, "Interview Scheduled"),
+    (REJECTED, "Rejected"),
+    (SELECTED, "Selected"),
+]
     candidate = models.ForeignKey(
         Candidate,
         on_delete=models.CASCADE
@@ -220,13 +221,21 @@ class Application(models.Model):
     )
 
     status = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=STATUS_CHOICES,
         default=APPLIED
     )
 
     applied_at = models.DateTimeField(
         auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+    auto_now=True
+    )
+
+    status_updated_at = models.DateTimeField(
+    auto_now=True
     )
 
     def __str__(self):
