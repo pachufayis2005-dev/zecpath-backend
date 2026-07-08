@@ -626,3 +626,211 @@ class ApplicationStatusUpdateAPIView(APIView):
             "message": "Application status updated",
             "status": application.status
         })
+
+class EmployerJobsAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer
+    ]
+
+    def get(self, request):
+
+        jobs = Job.objects.filter(
+            employer=request.user.employer
+        ).order_by(
+            "-created_at"
+        )
+
+        serializer = JobSerializer(
+            jobs,
+            many=True
+        )
+
+        return Response(
+            serializer.data
+        )
+
+class ApplicantListAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer
+    ]
+
+    def get(self, request, pk):
+
+        try:
+            job = Job.objects.get(
+                id=pk
+            )
+
+        except Job.DoesNotExist:
+
+            return Response(
+                {
+                    "error": "Job not found"
+                },
+                status=404
+            )
+
+        # Ownership Validation
+        if job.employer != request.user.employer:
+
+            return Response(
+                {
+                    "error": "Not your job"
+                },
+                status=403
+            )
+
+        applications = Application.objects.filter(
+            job=job
+        )
+
+        # ATS Status Filter
+        status_filter = request.GET.get("status")
+
+        if status_filter:
+            applications = applications.filter(
+                status=status_filter
+            )
+
+        # Candidate Search
+        search = request.GET.get("search")
+
+        if search:
+            applications = applications.filter(
+            candidate__user__username__icontains=search
+                )
+
+        applications = applications.select_related(
+            "candidate",
+            "candidate__user"
+        )
+
+        serializer = ApplicationSerializer(
+            applications,
+            many=True
+        )
+
+        return Response(
+            serializer.data
+        )
+
+class ApplicationCountAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer
+    ]
+
+    def get(self, request, pk):
+
+        try:
+            job = Job.objects.get(
+                id=pk
+            )
+
+        except Job.DoesNotExist:
+
+            return Response(
+                {
+                    "error": "Job not found"
+                },
+                status=404
+            )
+
+        # Ownership Validation
+        if job.employer != request.user.employer:
+
+            return Response(
+                {
+                    "error": "Not your job"
+                },
+                status=403
+            )
+
+        total = Application.objects.filter(
+            job=job
+        ).count()
+
+        shortlisted = Application.objects.filter(
+            job=job,
+            status=Application.SHORTLISTED
+        ).count()
+
+        rejected = Application.objects.filter(
+            job=job,
+            status=Application.REJECTED
+        ).count()
+
+        selected = Application.objects.filter(
+            job=job,
+            status=Application.SELECTED
+        ).count()
+
+        return Response(
+            {
+                "job": job.title,
+                "total_applications": total,
+                "shortlisted": shortlisted,
+                "rejected": rejected,
+                "selected": selected,
+            }
+        )
+class ShortlistRatioAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer
+    ]
+
+    def get(self, request, pk):
+
+        try:
+            job = Job.objects.get(
+                id=pk
+            )
+
+        except Job.DoesNotExist:
+
+            return Response(
+                {
+                    "error": "Job not found"
+                },
+                status=404
+            )
+
+        # Ownership Validation
+        if job.employer != request.user.employer:
+
+            return Response(
+                {
+                    "error": "Not your job"
+                },
+                status=403
+            )
+
+        total = Application.objects.filter(
+            job=job
+        ).count()
+
+        shortlisted = Application.objects.filter(
+            job=job,
+            status=Application.SHORTLISTED
+        ).count()
+
+        if total == 0:
+            ratio = 0
+        else:
+            ratio = round((shortlisted / total) * 100, 2)
+
+        return Response(
+            {
+                "job": job.title,
+                "total_applications": total,
+                "shortlisted": shortlisted,
+                "shortlist_ratio": f"{ratio}%"
+            }
+        )

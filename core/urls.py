@@ -16,6 +16,10 @@ from .views import (
     ApplicationHistoryAPIView,
     AppliedJobsAPIView,
     ApplicationStatusUpdateAPIView,
+    EmployerJobsAPIView,
+    ApplicantListAPIView,
+    ApplicationCountAPIView,
+    ShortlistRatioAPIView,
 )
 
 urlpatterns = [
@@ -35,4 +39,8 @@ urlpatterns = [
     path("applications/", ApplicationHistoryAPIView.as_view()),
     path("applications/jobs/", AppliedJobsAPIView.as_view()),
     path("applications/<int:pk>/status/", ApplicationStatusUpdateAPIView.as_view()),
+    path("employer/jobs/",EmployerJobsAPIView.as_view()),
+    path("jobs/<int:pk>/applicants/",ApplicantListAPIView.as_view()),
+    path("jobs/<int:pk>/analytics/",ApplicationCountAPIView.as_view()),
+    path("jobs/<int:pk>/shortlist-ratio/",ShortlistRatioAPIView.as_view()),
 ]
