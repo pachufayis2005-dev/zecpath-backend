@@ -1,4 +1,5 @@
 from django.urls import path
+
 from .views import (
     SignupAPIView,
     LoginAPIView,
@@ -20,8 +21,13 @@ from .views import (
     ApplicantListAPIView,
     ApplicationCountAPIView,
     ShortlistRatioAPIView,
+    SaveJobAPIView,
+    SavedJobsAPIView,
+    CandidateDashboardAPIView,
+    ApplicationTimelineAPIView,
+    RecommendedJobsAPIView,
+    InterviewStatusAPIView,
 )
-
 urlpatterns = [
     path('signup/', SignupAPIView.as_view()),
     path('login/', LoginAPIView.as_view()),
@@ -43,4 +49,10 @@ urlpatterns = [
     path("jobs/<int:pk>/applicants/",ApplicantListAPIView.as_view()),
     path("jobs/<int:pk>/analytics/",ApplicationCountAPIView.as_view()),
     path("jobs/<int:pk>/shortlist-ratio/",ShortlistRatioAPIView.as_view()),
+    path("jobs/<int:pk>/save/",SaveJobAPIView.as_view()),
+    path("saved-jobs/",SavedJobsAPIView.as_view()),
+    path("candidate/dashboard/",CandidateDashboardAPIView.as_view()),
+    path("applications/timeline/",ApplicationTimelineAPIView.as_view()),
+    path("jobs/recommended/",RecommendedJobsAPIView.as_view()),
+    path("applications/interview-status/",InterviewStatusAPIView.as_view()),
 ]
