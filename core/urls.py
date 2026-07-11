@@ -27,6 +27,12 @@ from .views import (
     ApplicationTimelineAPIView,
     RecommendedJobsAPIView,
     InterviewStatusAPIView,
+    EmployerApprovalAPIView,
+    UserBlockAPIView,
+    PlatformStatsAPIView,
+    JobActivityAPIView,
+    RemoveSpamJobAPIView,
+    AuditLogAPIView,
 )
 urlpatterns = [
     path('signup/', SignupAPIView.as_view()),
@@ -55,4 +61,10 @@ urlpatterns = [
     path("applications/timeline/",ApplicationTimelineAPIView.as_view()),
     path("jobs/recommended/",RecommendedJobsAPIView.as_view()),
     path("applications/interview-status/",InterviewStatusAPIView.as_view()),
+    path("employers/<int:pk>/approve/",EmployerApprovalAPIView.as_view()),
+    path("users/<int:pk>/block/",UserBlockAPIView.as_view()),
+    path("admin/platform-stats/",PlatformStatsAPIView.as_view()),
+    path("admin/job-activity/",JobActivityAPIView.as_view()),
+    path("jobs/<int:pk>/remove/",RemoveSpamJobAPIView.as_view()),
+    path("admin/audit-logs/",AuditLogAPIView.as_view()),
 ]

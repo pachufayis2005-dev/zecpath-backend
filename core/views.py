@@ -3,7 +3,6 @@ from django.shortcuts import render
 from .pagination import JobPagination
 from .profile_serializers import (CandidateProfileSerializer,EmployerProfileSerializer,)
 from .permissions import IsCandidate, IsEmployer, IsAdmin
-from .models import Candidate, Employer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,10 +10,16 @@ from .auth_serializers import SignupSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
-from .serializers import (ApplicationSerializer,SavedJobSerializer,)
-from .models import Application,SavedJob
-
-from .models import Job
+from .serializers import (ApplicationSerializer,SavedJobSerializer,AuditLogSerializer,)
+from .models import (
+    User,
+    Job,
+    Candidate,
+    Employer,
+    Application,
+    SavedJob,
+    AuditLog,
+)
 from .serializers import JobSerializer
 
 
@@ -1016,3 +1021,147 @@ class InterviewStatusAPIView(APIView):
                 })
 
         return Response(data)
+
+class EmployerApprovalAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin
+    ]
+
+    def patch(self, request, pk):
+
+        try:
+            employer = Employer.objects.get(id=pk)
+
+        except Employer.DoesNotExist:
+
+            return Response(
+                {
+                    "error": "Employer not found"
+                },
+                status=404
+            )
+
+        employer.is_approved = True
+        employer.save()
+
+        return Response(
+            {
+                "message": "Employer approved successfully"
+            }
+        )
+
+class UserBlockAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin
+    ]
+
+    def patch(self, request, pk):
+
+        try:
+            user = User.objects.get(id=pk)
+
+        except User.DoesNotExist:
+
+            return Response(
+                {
+                    "error": "User not found"
+                },
+                status=404
+            )
+
+        user.is_active = False
+        user.save()
+
+        return Response(
+            {
+                "message": "User blocked successfully"
+            }
+        )
+class PlatformStatsAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin
+    ]
+
+    def get(self, request):
+
+        data = {
+            "total_users": User.objects.count(),
+            "total_employers": Employer.objects.count(),
+            "total_candidates": Candidate.objects.count(),
+            "total_jobs": Job.objects.count(),
+            "total_applications": Application.objects.count(),
+        }
+
+        return Response(data)
+
+class JobActivityAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin
+    ]
+
+    def get(self, request):
+
+        data = {
+            "total_jobs": Job.objects.count(),
+            "active_jobs": Job.objects.filter(status="ACTIVE").count(),
+            "closed_jobs": Job.objects.filter(status="CLOSED").count(),
+            "featured_jobs": Job.objects.filter(is_featured=True).count(),
+        }
+
+        return Response(data)
+
+class RemoveSpamJobAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin
+    ]
+
+    def patch(self, request, pk):
+
+        try:
+            job = Job.objects.get(id=pk)
+
+        except Job.DoesNotExist:
+
+            return Response(
+                {
+                    "error": "Job not found"
+                },
+                status=404
+            )
+
+        job.status = "CLOSED"
+        job.save()
+
+        return Response(
+            {
+                "message": "Spam job removed successfully"
+            }
+        )
+
+class AuditLogAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin
+    ]
+
+    def get(self, request):
+
+        logs = AuditLog.objects.all().order_by("-created_at")
+
+        serializer = AuditLogSerializer(
+            logs,
+            many=True
+        )
+
+        return Response(serializer.data)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Job, Application,SavedJob
+from .models import Job, Application,SavedJob,AuditLog
 
 
 class JobSerializer(serializers.ModelSerializer):
@@ -51,4 +51,16 @@ class SavedJobSerializer(serializers.ModelSerializer):
             "id",
             "job",
             "saved_at",
+        ]
+
+class AuditLogSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AuditLog
+
+        fields = [
+            "id",
+            "admin",
+            "action",
+            "created_at",
         ]
