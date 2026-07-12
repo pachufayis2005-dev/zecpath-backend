@@ -33,6 +33,7 @@ from .views import (
     JobActivityAPIView,
     RemoveSpamJobAPIView,
     AuditLogAPIView,
+    ResumeParserAPIView,
 )
 urlpatterns = [
     path('signup/', SignupAPIView.as_view()),
@@ -67,4 +68,5 @@ urlpatterns = [
     path("admin/job-activity/",JobActivityAPIView.as_view()),
     path("jobs/<int:pk>/remove/",RemoveSpamJobAPIView.as_view()),
     path("admin/audit-logs/",AuditLogAPIView.as_view()),
+    path("resume/parse/",ResumeParserAPIView.as_view()),
 ]

@@ -1,5 +1,6 @@
 from django.shortcuts import render
 
+from .utils import extract_resume_text
 from .pagination import JobPagination
 from .profile_serializers import (CandidateProfileSerializer,EmployerProfileSerializer,)
 from .permissions import IsCandidate, IsEmployer, IsAdmin
@@ -1165,3 +1166,32 @@ class AuditLogAPIView(APIView):
         )
 
         return Response(serializer.data)
+class ResumeParserAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsCandidate
+    ]
+
+    def post(self, request):
+
+        if "resume" not in request.FILES:
+
+            return Response(
+                {
+                    "error": "Resume file is required"
+                },
+                status=400
+            )
+
+        resume = request.FILES["resume"]
+
+        text = extract_resume_text(resume)
+
+        return Response(
+            {
+                "filename": resume.name,
+                "clean_text": text
+            },
+            status=200
+        )
