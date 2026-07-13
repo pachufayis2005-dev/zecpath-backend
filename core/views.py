@@ -22,6 +22,12 @@ from .models import (
     AuditLog,
 )
 from .serializers import JobSerializer
+from .utils import (
+    extract_resume_text,
+    extract_skills,
+    extract_experience,
+    extract_education,
+)
 
 
 class JobListAPIView(APIView):
@@ -1175,23 +1181,32 @@ class ResumeParserAPIView(APIView):
 
     def post(self, request):
 
-        if "resume" not in request.FILES:
+        uploaded_file = request.FILES.get("resume")
+
+        if not uploaded_file:
 
             return Response(
                 {
-                    "error": "Resume file is required"
+                    "error": "Resume file required"
                 },
                 status=400
             )
 
-        resume = request.FILES["resume"]
+        clean_text = extract_resume_text(uploaded_file)
 
-        text = extract_resume_text(resume)
+        skills = extract_skills(clean_text)
+
+        experience = extract_experience(clean_text)
+
+        education = extract_education(clean_text)
 
         return Response(
             {
-                "filename": resume.name,
-                "clean_text": text
+                "filename": uploaded_file.name,
+                "skills": skills,
+                "experience": experience,
+                "education": education,
+                "clean_text": clean_text,
             },
             status=200
         )
