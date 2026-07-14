@@ -1176,7 +1176,7 @@ class ResumeParserAPIView(APIView):
 
     permission_classes = [
         IsAuthenticated,
-        IsCandidate
+        IsCandidate,
     ]
 
     def post(self, request):
@@ -1184,12 +1184,11 @@ class ResumeParserAPIView(APIView):
         uploaded_file = request.FILES.get("resume")
 
         if not uploaded_file:
-
             return Response(
                 {
                     "error": "Resume file required"
                 },
-                status=400
+                status=400,
             )
 
         clean_text = extract_resume_text(uploaded_file)
@@ -1208,5 +1207,5 @@ class ResumeParserAPIView(APIView):
                 "education": education,
                 "clean_text": clean_text,
             },
-            status=200
+            status=200,
         )

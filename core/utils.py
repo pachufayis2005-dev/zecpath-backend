@@ -135,3 +135,81 @@ def extract_education(text):
             found.append(item)
 
     return found
+
+# -----------------------------
+# ATS Score Calculation
+# -----------------------------
+
+def calculate_ats_score(job, parsed_resume):
+
+    score = 0
+
+    matched_skills = []
+
+    # -----------------------------
+    # Skills (60%)
+    # -----------------------------
+
+    job_skills = [
+        skill.strip().lower()
+        for skill in job.skills.split(",")
+    ]
+
+    resume_skills = [
+        skill.lower()
+        for skill in parsed_resume["skills"]
+    ]
+
+    for skill in job_skills:
+
+        if skill in resume_skills:
+
+            matched_skills.append(skill)
+
+    if job_skills:
+
+        skill_score = (
+            len(matched_skills)
+            /
+            len(job_skills)
+        ) * 60
+
+    else:
+
+        skill_score = 0
+
+    score += skill_score
+
+    # -----------------------------
+    # Experience (30%)
+    # -----------------------------
+
+    job_exp = "".join(
+        filter(str.isdigit, job.experience)
+    )
+
+    resume_exp = "".join(
+        filter(str.isdigit, parsed_resume["experience"])
+    )
+
+    if job_exp and resume_exp:
+
+        if int(resume_exp) >= int(job_exp):
+
+            score += 30
+
+    # -----------------------------
+    # Education (10%)
+    # -----------------------------
+
+    if parsed_resume["education"]:
+
+        score += 10
+
+    return {
+
+        "score": round(score, 2),
+
+        "matched_skills": matched_skills
+
+    }
