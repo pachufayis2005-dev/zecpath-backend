@@ -230,6 +230,12 @@ class Application(models.Model):
         default=APPLIED
     )
 
+    ats_score = models.FloatField(
+    default=0,
+    null=True,
+    blank=True,
+)
+
     applied_at = models.DateTimeField(
         auto_now_add=True
     )

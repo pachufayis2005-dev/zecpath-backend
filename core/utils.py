@@ -150,11 +150,13 @@ def calculate_ats_score(job, parsed_resume):
     # Skills (60%)
     # -----------------------------
 
-    job_skills = [
-        skill.strip().lower()
-        for skill in job.skills.split(",")
-    ]
+    import re  # add this at the top of the file if not already there
 
+    job_skills = [
+    skill.strip().lower()
+    for skill in re.split(r"[,\n]+", job.skills)
+    if skill.strip()
+    ]
     resume_skills = [
         skill.lower()
         for skill in parsed_resume["skills"]

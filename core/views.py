@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
-from .utils import extract_resume_text
+import re
+from .utils import extract_resume_text,calculate_ats_score
 from .pagination import JobPagination
 from .profile_serializers import (CandidateProfileSerializer,EmployerProfileSerializer,)
 from .permissions import IsCandidate, IsEmployer, IsAdmin
@@ -460,67 +461,59 @@ class ApplyJobAPIView(APIView):
 
     def post(self, request, pk):
 
-        # Find job
         try:
-            job = Job.objects.get(
-                id=pk
-            )
-
+            job = Job.objects.get(id=pk)
         except Job.DoesNotExist:
-
             return Response(
-                {
-                    "error": "Job not found"
-                },
+                {"error": "Job not found"},
                 status=404
             )
 
-        # Check if job is active
         if job.status != Job.ACTIVE:
-
             return Response(
-                {
-                    "error": "Job is closed"
-                },
+                {"error": "Job is closed"},
                 status=400
             )
 
-        # Duplicate prevention
         if Application.objects.filter(
             candidate=request.user.candidate,
             job=job
         ).exists():
-
             return Response(
-                {
-                    "error": "Already applied"
-                },
+                {"error": "Already applied"},
                 status=400
             )
 
-        # Resume binding
         resume = ""
-
         if request.user.candidate.resume:
-            resume = str(
-                request.user.candidate.resume
-            )
+            resume = str(request.user.candidate.resume)
+
+        # --- NEW: calculate ATS score from candidate's stored skills/experience ---
+        parsed_resume = {
+            "skills": [
+                skill.strip().lower()
+                for skill in re.split(r"[,\n]+", request.user.candidate.skills or "")
+                if skill.strip()
+            ],
+            "experience": request.user.candidate.experience or "",
+            "education": [],  # candidate model may not track this separately; leave empty or adjust if it does
+        }
+
+        ats_result = calculate_ats_score(job, parsed_resume)
 
         application = Application.objects.create(
             candidate=request.user.candidate,
             job=job,
-            resume_snapshot=resume
+            resume_snapshot=resume,
+            ats_score=ats_result["score"],   # ← NEW
         )
 
-        serializer = ApplicationSerializer(
-            application
-        )
+        serializer = ApplicationSerializer(application)
 
         return Response(
             serializer.data,
             status=201
         )
-
 class ApplicationHistoryAPIView(APIView):
 
     permission_classes = [
@@ -1185,27 +1178,119 @@ class ResumeParserAPIView(APIView):
 
         if not uploaded_file:
             return Response(
-                {
-                    "error": "Resume file required"
-                },
+                {"error": "Resume file required"},
                 status=400,
+            )
+
+        job_id = request.data.get("job_id")
+
+        if not job_id:
+            return Response(
+                {"error": "job_id is required"},
+                status=400,
+            )
+
+        try:
+            job = Job.objects.get(id=job_id)
+        except Job.DoesNotExist:
+            return Response(
+                {"error": "Job not found"},
+                status=404,
             )
 
         clean_text = extract_resume_text(uploaded_file)
 
         skills = extract_skills(clean_text)
-
         experience = extract_experience(clean_text)
-
         education = extract_education(clean_text)
+
+        parsed_resume = {
+            "skills": skills,
+            "experience": experience,
+            "education": education,
+        }
+
+        # Job Skills
+        job_skills = [
+            skill.strip().lower()
+            for skill in re.split(r"[,\n]+", job.skills)
+            if skill.strip()
+        ]
+
+        # Resume Skills
+        resume_skills = [
+            skill.lower()
+            for skill in skills
+        ]
+
+        # Match Skills
+        matched_skills = [
+            skill for skill in job_skills if skill in resume_skills
+        ]
+
+        # ATS Score
+        ats_result = calculate_ats_score(job, parsed_resume)
 
         return Response(
             {
                 "filename": uploaded_file.name,
+                "job": job.title,
+                "job_skills": job_skills,
+                "matched_skills": matched_skills,
                 "skills": skills,
                 "experience": experience,
                 "education": education,
+                "ats_score": ats_result["score"],
                 "clean_text": clean_text,
             },
             status=200,
         )
+
+class RankedCandidatesAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer
+    ]
+
+    def get(self, request, pk):
+
+        try:
+            job = Job.objects.get(id=pk)
+        except Job.DoesNotExist:
+            return Response(
+                {"error": "Job not found"},
+                status=404
+            )
+
+        if job.employer != request.user.employer:
+            return Response(
+                {"error": "Not your job"},
+                status=403
+            )
+
+        applications = Application.objects.filter(
+            job=job
+        ).select_related(
+            "candidate",
+            "candidate__user"
+        ).order_by(
+            "-ats_score"
+        )
+
+        data = []
+
+        for application in applications:
+            data.append({
+                "candidate": application.candidate.user.username,
+                "ats_score": application.ats_score,
+                "suitability": f"{application.ats_score}%",
+                "status": application.status,
+                "applied_at": application.applied_at,
+            })
+
+        return Response({
+            "job": job.title,
+            "total_candidates": len(data),
+            "ranked_candidates": data,
+        })
