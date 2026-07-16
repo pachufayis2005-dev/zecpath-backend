@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 import re
 from .utils import extract_resume_text,calculate_ats_score
+from .services import (auto_shortlist,check_candidate_eligibility,process_pending_applications,)
 from .pagination import JobPagination
 from .profile_serializers import (CandidateProfileSerializer,EmployerProfileSerializer,)
 from .permissions import IsCandidate, IsEmployer, IsAdmin
@@ -461,6 +462,9 @@ class ApplyJobAPIView(APIView):
 
     def post(self, request, pk):
 
+        print("Logged in user:", request.user.username)
+        print("Candidate:", request.user.candidate.id)
+
         try:
             job = Job.objects.get(id=pk)
         except Job.DoesNotExist:
@@ -499,6 +503,17 @@ class ApplyJobAPIView(APIView):
             "education": [],  # candidate model may not track this separately; leave empty or adjust if it does
         }
 
+        eligible = check_candidate_eligibility(job,parsed_resume)
+
+        if not eligible:
+
+            return Response(
+            {
+            "error": "Candidate is not eligible for this job."
+            },
+            status=400
+    )
+
         ats_result = calculate_ats_score(job, parsed_resume)
 
         application = Application.objects.create(
@@ -507,6 +522,10 @@ class ApplyJobAPIView(APIView):
             resume_snapshot=resume,
             ats_score=ats_result["score"],   # ← NEW
         )
+
+        auto_shortlist(application)
+
+        application.refresh_from_db()
 
         serializer = ApplicationSerializer(application)
 
@@ -1294,3 +1313,78 @@ class RankedCandidatesAPIView(APIView):
             "total_candidates": len(data),
             "ranked_candidates": data,
         })
+
+class UpdateApplicationStatusAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer
+    ]
+
+    def patch(self, request, pk):
+
+        try:
+            application = Application.objects.get(id=pk)
+
+        except Application.DoesNotExist:
+
+            return Response(
+                {"error": "Application not found"},
+                status=404
+            )
+
+        if application.job.employer != request.user.employer:
+
+            return Response(
+                {"error": "Not your application"},
+                status=403
+            )
+
+        new_status = request.data.get("status")
+
+        valid_statuses = [
+
+            Application.SHORTLISTED,
+            Application.REJECTED,
+            Application.INTERVIEW_SCHEDULED,
+            Application.SELECTED,
+
+        ]
+
+        if new_status not in valid_statuses:
+
+            return Response(
+                {"error": "Invalid status"},
+                status=400
+            )
+
+        application.status = new_status
+
+        application.save()
+
+        serializer = ApplicationSerializer(application)
+
+        return Response(
+        {
+        "message": f"Candidate has been notified: Application {new_status}",
+        "application": serializer.data,
+        }
+)
+
+class ProcessApplicationsAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer
+    ]
+
+    def post(self, request):
+
+        updated = process_pending_applications()
+
+        return Response(
+            {
+                "message": "Batch processing completed.",
+                "processed_applications": updated,
+            }
+        )
