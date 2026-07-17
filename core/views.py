@@ -2,7 +2,13 @@ from django.shortcuts import render
 
 import re
 from .utils import extract_resume_text,calculate_ats_score
-from .services import (auto_shortlist,check_candidate_eligibility,process_pending_applications,)
+from .services import (
+    auto_shortlist,
+    check_candidate_eligibility,
+    process_pending_applications,
+    send_email_notification_async,
+    application_submitted_template,
+)
 from .pagination import JobPagination
 from .profile_serializers import (CandidateProfileSerializer,EmployerProfileSerializer,)
 from .permissions import IsCandidate, IsEmployer, IsAdmin
@@ -526,6 +532,17 @@ class ApplyJobAPIView(APIView):
         auto_shortlist(application)
 
         application.refresh_from_db()
+
+        subject, message = application_submitted_template(
+            request.user.username,
+            job.title,
+        )
+
+        send_email_notification_async(
+            request.user.email,
+            subject,
+            message,
+        )
 
         serializer = ApplicationSerializer(application)
 

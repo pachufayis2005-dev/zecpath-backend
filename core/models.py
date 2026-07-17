@@ -198,6 +198,7 @@ class Job(models.Model):
 class Application(models.Model):
 
     APPLIED = "APPLIED"
+    UNDER_REVIEW = "UNDER_REVIEW"
     SHORTLISTED = "SHORTLISTED"
     INTERVIEW_SCHEDULED = "INTERVIEW_SCHEDULED"
     REJECTED = "REJECTED"
@@ -205,6 +206,7 @@ class Application(models.Model):
 
     STATUS_CHOICES = [
     (APPLIED, "Applied"),
+    (UNDER_REVIEW, "Under Review"),
     (SHORTLISTED, "Shortlisted"),
     (INTERVIEW_SCHEDULED, "Interview Scheduled"),
     (REJECTED, "Rejected"),
@@ -296,3 +298,33 @@ class AuditLog(models.Model):
     def __str__(self):
         return self.action
 
+class EmailLog(models.Model):
+
+    recipient = models.EmailField()
+
+    subject = models.CharField(
+        max_length=255
+    )
+
+    message = models.TextField()
+
+    SENT = "SENT"
+    FAILED = "FAILED"
+
+    STATUS_CHOICES = [
+    (SENT, "Sent"),
+    (FAILED, "Failed"),
+    ]
+
+    status = models.CharField(
+    max_length=20,
+    choices=STATUS_CHOICES,
+    default=SENT
+    )
+
+    sent_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return self.subject
