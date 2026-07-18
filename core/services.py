@@ -134,3 +134,46 @@ ZecPath Team
 """
 
     return subject, message
+
+def shortlisted_template(candidate_name, job_title):
+
+    subject = "Congratulations! You have been Shortlisted"
+
+    message = f"""
+Hello {candidate_name},
+
+Congratulations!
+
+You have been shortlisted for the position of
+
+'{job_title}'
+
+Our recruitment team will contact you soon regarding the next steps.
+
+Regards,
+ZecPath Team
+"""
+
+    return subject, message
+
+
+def rejected_template(candidate_name, job_title):
+
+    subject = "Application Status Update"
+
+    message = f"""
+Hello {candidate_name},
+
+Thank you for applying for
+
+'{job_title}'
+
+Unfortunately, your application was not shortlisted this time.
+
+We wish you the very best for your future opportunities.
+
+Regards,
+ZecPath Team
+"""
+
+    return subject, message

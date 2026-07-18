@@ -36,7 +36,7 @@ from .views import (
     ResumeParserAPIView,
     RankedCandidatesAPIView,
     UpdateApplicationStatusAPIView,
-    ProcessApplicationsAPIView
+    ProcessApplicationsAPIView,
 )
 urlpatterns = [
     path('signup/', SignupAPIView.as_view()),

@@ -192,6 +192,16 @@ class Job(models.Model):
         auto_now=True
     )
 
+    class Meta:
+
+        indexes = [
+
+            models.Index(fields=["status"]),
+            models.Index(fields=["location"]),
+            models.Index(fields=["job_type"]),
+
+        ]
+
     def __str__(self):
         return self.title
 
@@ -249,6 +259,16 @@ class Application(models.Model):
     status_updated_at = models.DateTimeField(
     auto_now=True
     )
+
+    class Meta:
+
+        indexes = [
+
+            models.Index(fields=["candidate"]),
+            models.Index(fields=["job"]),
+            models.Index(fields=["status"]),
+
+        ]
 
     def __str__(self):
         return (

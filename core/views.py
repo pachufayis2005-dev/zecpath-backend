@@ -8,6 +8,8 @@ from .services import (
     process_pending_applications,
     send_email_notification_async,
     application_submitted_template,
+    shortlisted_template,
+    rejected_template,
 )
 from .pagination import JobPagination
 from .profile_serializers import (CandidateProfileSerializer,EmployerProfileSerializer,)
@@ -1305,14 +1307,15 @@ class RankedCandidatesAPIView(APIView):
                 status=403
             )
 
-        applications = Application.objects.filter(
-            job=job
-        ).select_related(
-            "candidate",
-            "candidate__user"
-        ).order_by(
-            "-ats_score"
-        )
+        applications = (
+        Application.objects
+        .filter(job=job)
+        .select_related(
+        "candidate",
+        "candidate__user",
+    )
+    .order_by("-ats_score")
+)
 
         data = []
 
@@ -1405,3 +1408,83 @@ class ProcessApplicationsAPIView(APIView):
                 "processed_applications": updated,
             }
         )
+
+class UpdateApplicationStatusAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer,
+    ]
+
+    def patch(self, request, pk):
+
+        try:
+            application = Application.objects.get(id=pk)
+
+        except Application.DoesNotExist:
+
+            return Response(
+                {
+                    "error": "Application not found"
+                },
+                status=404
+            )
+
+        if application.job.employer != request.user.employer:
+
+            return Response(
+                {
+                    "error": "Not your job"
+                },
+                status=403
+            )
+
+        status = request.data.get("status")
+
+        if status not in [
+
+            Application.SHORTLISTED,
+            Application.REJECTED,
+
+        ]:
+
+            return Response(
+                {
+                    "error": "Invalid status"
+                },
+                status=400
+            )
+
+        application.status = status
+
+        application.save()
+
+        if status == Application.SHORTLISTED:
+
+            subject, message = shortlisted_template(
+                application.candidate.user.username,
+                application.job.title,
+            )
+
+            send_email_notification_async(
+                application.candidate.user.email,
+                subject,
+                message,
+            )
+
+        elif status == Application.REJECTED:
+
+            subject, message = rejected_template(
+                application.candidate.user.username,
+                application.job.title,
+            )
+
+            send_email_notification_async(
+                application.candidate.user.email,
+                subject,
+                message,
+            )
+
+        serializer = ApplicationSerializer(application)
+
+        return Response(serializer.data)
