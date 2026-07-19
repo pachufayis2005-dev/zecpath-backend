@@ -166,3 +166,53 @@ Using a valid employer token returned:
 
 Status:
 Resolved
+
+#ANOTHER DAY BUG REPORT
+
+Bug 1
+Issue
+Duplicate application allowed.
+Fix
+Added duplicate application check.
+Application.objects.filter(
+    candidate=request.user.candidate,
+    job=job
+).exists()
+Result
+Already applied
+is returned.
+________________________________________
+Bug 2
+Issue
+Candidate status always started as
+APPLIED
+even before ATS evaluation.
+Fix
+Changed default flow to
+UNDER_REVIEW
+ATS now decides whether candidate is shortlisted.
+________________________________________
+Bug 3
+Issue
+Email was being sent twice.
+Cause
+Duplicate email notification function call.
+Fix
+Removed duplicate call.
+________________________________________
+Bug 4
+Issue
+Employer could access other employer applications.
+Fix
+Ownership validation.
+if application.job.employer != request.user.employer:
+returns
+403 Forbidden
+________________________________________
+Bug 5
+Issue
+Unauthorized users could access protected APIs.
+Fix
+JWT Authentication
+IsAuthenticated
+permission added.
