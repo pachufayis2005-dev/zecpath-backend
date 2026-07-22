@@ -6,11 +6,11 @@ from .services import (
     auto_shortlist,
     check_candidate_eligibility,
     process_pending_applications,
-    send_email_notification_async,
     application_submitted_template,
     shortlisted_template,
     rejected_template,
 )
+from .tasks import send_email_task
 from .pagination import JobPagination
 from .profile_serializers import (CandidateProfileSerializer,EmployerProfileSerializer,)
 from .permissions import IsCandidate, IsEmployer, IsAdmin
@@ -540,10 +540,10 @@ class ApplyJobAPIView(APIView):
             job.title,
         )
 
-        send_email_notification_async(
-            request.user.email,
-            subject,
-            message,
+        send_email_task.delay(
+        request.user.email,
+        subject,
+        message,
         )
 
         serializer = ApplicationSerializer(application)
@@ -1466,11 +1466,12 @@ class UpdateApplicationStatusAPIView(APIView):
                 application.job.title,
             )
 
-            send_email_notification_async(
-                application.candidate.user.email,
+            send_email_task.delay(
+                request.user.email,
                 subject,
                 message,
             )
+
 
         elif status == Application.REJECTED:
 
@@ -1479,8 +1480,8 @@ class UpdateApplicationStatusAPIView(APIView):
                 application.job.title,
             )
 
-            send_email_notification_async(
-                application.candidate.user.email,
+            send_email_task.delay(
+                request.user.email,
                 subject,
                 message,
             )
