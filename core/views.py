@@ -9,8 +9,9 @@ from .services import (
     application_submitted_template,
     shortlisted_template,
     rejected_template,
+    check_application_eligibility,
 )
-from .tasks import send_email_task
+from .tasks import (send_email_task,process_interview_calls,)
 from .pagination import JobPagination
 from .profile_serializers import (CandidateProfileSerializer,EmployerProfileSerializer,)
 from .permissions import IsCandidate, IsEmployer, IsAdmin
@@ -30,6 +31,7 @@ from .models import (
     Application,
     SavedJob,
     AuditLog,
+    InterviewCall,
 )
 from .serializers import JobSerializer
 from .utils import (
@@ -534,6 +536,20 @@ class ApplyJobAPIView(APIView):
         auto_shortlist(application)
 
         application.refresh_from_db()
+
+        # Check whether this application is eligible
+        # for the interview scheduling process.
+
+
+        interview_ready = check_application_eligibility(application)
+
+        if interview_ready:
+            print("Application is eligible for interview scheduling.")
+
+            InterviewCall.objects.create(application=application,status=InterviewCall.QUEUED,)
+            process_interview_calls.delay()
+        else:
+            print("Application is NOT eligible for interview scheduling.")
 
         subject, message = application_submitted_template(
             request.user.username,

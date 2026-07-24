@@ -1,6 +1,6 @@
 import threading
 
-from .models import Application,EmailLog
+from .models import Application,EmailLog,Job
 from .utils import calculate_ats_score
 
 
@@ -177,3 +177,26 @@ ZecPath Team
 """
 
     return subject, message
+
+def check_application_eligibility(application):
+    """
+    Check whether an application is eligible
+    for interview scheduling.
+    """
+
+    if not application.candidate:
+        return False
+
+    if not application.job:
+        return False
+
+    if application.ats_score < 70:
+        return False
+
+    if application.job.status != Job.ACTIVE:
+        return False
+
+    if not application.candidate.is_active:
+        return False
+
+    return True

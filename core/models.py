@@ -277,6 +277,56 @@ class Application(models.Model):
             f"{self.job.title}"
         )
 
+class InterviewCall(models.Model):
+
+    QUEUED = "QUEUED"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+    STATUS_CHOICES = [
+        (QUEUED, "Queued"),
+        (IN_PROGRESS, "In Progress"),
+        (COMPLETED, "Completed"),
+        (FAILED, "Failed"),
+    ]
+
+    application = models.OneToOneField(
+        Application,
+        on_delete=models.CASCADE,
+        related_name="interview_call",
+    )
+
+    scheduled_time = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=QUEUED,
+    )
+
+    retry_count = models.IntegerField(
+        default=0,
+    )
+
+    notes = models.TextField(
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    def __str__(self):
+        return f"{self.application} - {self.status}"
+
 class SavedJob(models.Model):
 
     candidate = models.ForeignKey(
