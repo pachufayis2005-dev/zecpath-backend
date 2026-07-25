@@ -1,6 +1,14 @@
 import threading
 
-from .models import Application,EmailLog,Job
+from .models import (
+    Application,
+    EmailLog,
+    Job,
+    AIInterviewSession,
+    AIQuestion,
+    AIAnswer,
+    CallLog,
+)
 from .utils import calculate_ats_score
 
 
@@ -200,3 +208,40 @@ def check_application_eligibility(application):
         return False
 
     return True
+
+def create_ai_interview_session(application):
+    """
+    Create interview session, default questions,
+    empty answers and audit log.
+    """
+
+    session = AIInterviewSession.objects.create(
+        interview_call=application.interviewcall
+    )
+
+    questions = [
+        "Tell me about yourself.",
+        "Why do you want this job?",
+        "Explain one Django project you have worked on.",
+    ]
+
+    for question in questions:
+
+        ai_question = AIQuestion.objects.create(
+            session=session,
+            question=question,
+        )
+
+        AIAnswer.objects.create(
+            question=ai_question,
+            answer="",
+            transcript={},
+        )
+
+    CallLog.objects.create(
+        session=session,
+        triggered_by=application.candidate.user,
+        action="AI Interview Started",
+    )
+
+    return session

@@ -327,6 +327,99 @@ class InterviewCall(models.Model):
     def __str__(self):
         return f"{self.application} - {self.status}"
 
+class AIInterviewSession(models.Model):
+
+    STARTED = "STARTED"
+    COMPLETED = "COMPLETED"
+
+    STATUS_CHOICES = [
+        (STARTED, "Started"),
+        (COMPLETED, "Completed"),
+    ]
+
+    interview_call = models.OneToOneField(
+        InterviewCall,
+        on_delete=models.CASCADE,
+    )
+
+    started_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STARTED,
+    )
+
+    def __str__(self):
+        return f"Session {self.id}"
+
+class AIQuestion(models.Model):
+
+    session = models.ForeignKey(
+        AIInterviewSession,
+        on_delete=models.CASCADE,
+        related_name="questions",
+    )
+
+    question = models.TextField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return self.question[:40]
+
+class AIAnswer(models.Model):
+
+    question = models.OneToOneField(
+        AIQuestion,
+        on_delete=models.CASCADE,
+    )
+
+    answer = models.TextField()
+
+    transcript = models.JSONField(
+        default=dict,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return self.answer[:40]
+
+class CallLog(models.Model):
+
+    session = models.ForeignKey(
+        AIInterviewSession,
+        on_delete=models.CASCADE,
+    )
+
+    triggered_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
+
+    action = models.CharField(
+        max_length=200,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return self.action
+
 class SavedJob(models.Model):
 
     candidate = models.ForeignKey(

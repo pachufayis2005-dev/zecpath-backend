@@ -10,6 +10,7 @@ from .services import (
     shortlisted_template,
     rejected_template,
     check_application_eligibility,
+    create_ai_interview_session,
 )
 from .tasks import (send_email_task,process_interview_calls,)
 from .pagination import JobPagination
@@ -546,7 +547,13 @@ class ApplyJobAPIView(APIView):
         if interview_ready:
             print("Application is eligible for interview scheduling.")
 
-            InterviewCall.objects.create(application=application,status=InterviewCall.QUEUED,)
+            interview = InterviewCall.objects.create(
+            application=application,
+            status=InterviewCall.QUEUED,
+        )
+
+            create_ai_interview_session(application)
+
             process_interview_calls.delay()
         else:
             print("Application is NOT eligible for interview scheduling.")
