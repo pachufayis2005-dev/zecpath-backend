@@ -409,6 +409,35 @@ class AIAnswer(models.Model):
         default=dict,
     )
 
+    confidence_score = models.FloatField(
+        default=0,
+    )
+
+    relevance_score = models.FloatField(
+        default=0,
+    )
+
+    completeness_score = models.FloatField(
+        default=0,
+    )
+
+    final_score = models.FloatField(
+        default=0,
+    )
+
+    ai_feedback = models.TextField(
+        blank=True,
+    )
+
+    matched_keywords = models.JSONField(
+        default=list,
+    )
+
+    evaluated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )

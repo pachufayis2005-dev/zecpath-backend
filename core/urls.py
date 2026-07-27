@@ -37,6 +37,8 @@ from .views import (
     RankedCandidatesAPIView,
     UpdateApplicationStatusAPIView,
     ProcessApplicationsAPIView,
+    SubmitAnswerAPIView,
+    AnswerScoreAPIView,
 )
 urlpatterns = [
     path('signup/', SignupAPIView.as_view()),
@@ -75,4 +77,6 @@ urlpatterns = [
     path("jobs/<int:pk>/ranked-candidates/", RankedCandidatesAPIView.as_view()),
     path('applications/<int:pk>/update-status/',UpdateApplicationStatusAPIView.as_view(),name='update-application-status'),
     path("applications/process/",ProcessApplicationsAPIView.as_view(),),
+    path("ai-answer/<int:answer_id>/submit/",SubmitAnswerAPIView.as_view(),),
+    path("ai-answer/<int:pk>/score/",AnswerScoreAPIView.as_view(),),
 ]

@@ -65,3 +65,6 @@ class AuditLogSerializer(serializers.ModelSerializer):
             "action",
             "created_at",
         ]
+
+class SubmitAnswerSerializer(serializers.Serializer):
+    answer = serializers.CharField()

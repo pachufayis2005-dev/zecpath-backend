@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
 import re
+from .services import AnswerEvaluator
 from .utils import extract_resume_text,calculate_ats_score
 from .services_py import (
     auto_shortlist,
@@ -23,7 +24,7 @@ from .auth_serializers import SignupSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
-from .serializers import (ApplicationSerializer,SavedJobSerializer,AuditLogSerializer,)
+from .serializers import (ApplicationSerializer,SavedJobSerializer,AuditLogSerializer,SubmitAnswerSerializer,)
 from .models import (
     User,
     Job,
@@ -33,6 +34,7 @@ from .models import (
     SavedJob,
     AuditLog,
     InterviewCall,
+    AIAnswer
 )
 from .serializers import JobSerializer
 from .utils import (
@@ -1512,3 +1514,82 @@ class UpdateApplicationStatusAPIView(APIView):
         serializer = ApplicationSerializer(application)
 
         return Response(serializer.data)
+
+class SubmitAnswerAPIView(APIView):
+
+    def post(self, request, answer_id):
+
+        try:
+            ai_answer = AIAnswer.objects.get(id=answer_id)
+
+        except AIAnswer.DoesNotExist:
+            return Response(
+                {"error": "Answer not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = SubmitAnswerSerializer(
+            data=request.data
+        )
+
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        ai_answer.answer = serializer.validated_data["answer"]
+        ai_answer.save()
+
+        evaluator = AnswerEvaluator()
+        evaluator.evaluate(ai_answer)
+
+        return Response(
+            {
+                "message": "Answer submitted successfully",
+                "score": ai_answer.final_score,
+                "feedback": ai_answer.ai_feedback,
+            }
+        )
+
+class AnswerScoreAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            answer = AIAnswer.objects.select_related(
+                "question__session__interview_call__application__candidate__user"
+            ).get(pk=pk)
+
+            candidate = (
+                answer.question
+                .session
+                .interview_call
+                .application
+                .candidate
+            )
+
+            if request.user != candidate.user:
+                return Response(
+                    {"error": "Permission denied"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        except AIAnswer.DoesNotExist:
+            return Response(
+                {"error": "Answer not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        return Response({
+            "question": answer.question.question,
+            "answer": answer.answer,
+            "session_id": answer.question.session.id,
+            "relevance_score": answer.relevance_score,
+            "completeness_score": answer.completeness_score,
+            "confidence_score": answer.confidence_score,
+            "final_score": answer.final_score,
+            "matched_keywords": answer.matched_keywords,
+            "evaluated_at": answer.evaluated_at,
+            "feedback": answer.ai_feedback,
+        })
