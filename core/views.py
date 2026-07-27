@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 import re
 from .utils import extract_resume_text,calculate_ats_score
-from .services import (
+from .services_py import (
     auto_shortlist,
     check_candidate_eligibility,
     process_pending_applications,

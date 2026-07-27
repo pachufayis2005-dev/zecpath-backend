@@ -216,7 +216,7 @@ def create_ai_interview_session(application):
     """
 
     session = AIInterviewSession.objects.create(
-        interview_call=application.interviewcall
+        interview_call=application.interview_call
     )
 
     questions = [
