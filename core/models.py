@@ -362,10 +362,29 @@ class AIInterviewSession(models.Model):
 
 class AIQuestion(models.Model):
 
+    INTRODUCTION = "INTRODUCTION"
+    EXPERIENCE = "EXPERIENCE"
+    SKILLS = "SKILLS"
+    AVAILABILITY = "AVAILABILITY"
+    SALARY = "SALARY"
+
+    CATEGORY_CHOICES = [
+        (INTRODUCTION, "Introduction"),
+        (EXPERIENCE, "Experience"),
+        (SKILLS, "Skills"),
+        (AVAILABILITY, "Availability"),
+        (SALARY, "Salary"),
+    ]
+
     session = models.ForeignKey(
         AIInterviewSession,
         on_delete=models.CASCADE,
         related_name="questions",
+    )
+
+    category = models.CharField(
+        max_length=30,
+        choices=CATEGORY_CHOICES,
     )
 
     question = models.TextField()
@@ -375,7 +394,7 @@ class AIQuestion(models.Model):
     )
 
     def __str__(self):
-        return self.question[:40]
+        return f"{self.category} - {self.question[:40]}"
 
 class AIAnswer(models.Model):
 

@@ -1,5 +1,7 @@
 import threading
 
+
+from core.services.question_engine import QuestionEngine
 from .models import (
     Application,
     EmailLog,
@@ -219,23 +221,24 @@ def create_ai_interview_session(application):
         interview_call=application.interview_call
     )
 
-    questions = [
-        "Tell me about yourself.",
-        "Why do you want this job?",
-        "Explain one Django project you have worked on.",
-    ]
+    engine = QuestionEngine()
 
-    for question in questions:
+    questions = engine.generate_questions(
+             application.job.title
+        )
+
+    for item in questions:
 
         ai_question = AIQuestion.objects.create(
-            session=session,
-            question=question,
+        session=session,
+        category=item["category"],
+        question=item["question"],
         )
 
         AIAnswer.objects.create(
-            question=ai_question,
-            answer="",
-            transcript={},
+        question=ai_question,
+        answer="",
+        transcript={},
         )
 
     CallLog.objects.create(
