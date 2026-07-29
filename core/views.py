@@ -13,7 +13,7 @@ from .services_py import (
     check_application_eligibility,
     create_ai_interview_session,
 )
-from .tasks import (send_email_task,process_interview_calls,)
+from .tasks import (send_email_task,process_interview_calls,send_interview_reminders)
 from .pagination import JobPagination
 from .profile_serializers import (CandidateProfileSerializer,EmployerProfileSerializer,)
 from .permissions import IsCandidate, IsEmployer, IsAdmin
@@ -1687,4 +1687,17 @@ class BookInterviewAPIView(APIView):
                 "schedule_id": schedule.id,
             },
             status=status.HTTP_201_CREATED,
+        )
+
+class SendInterviewRemindersAPIView(APIView):
+
+    def post(self, request):
+
+        send_interview_reminders.delay()
+
+        return Response(
+            {
+                "message": "Reminder task started"
+            },
+            status=status.HTTP_200_OK,
         )

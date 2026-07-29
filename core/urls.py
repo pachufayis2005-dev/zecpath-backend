@@ -42,6 +42,7 @@ from .views import (
     CreateAvailabilitySlotAPIView,
     AvailabilityListAPIView,
     BookInterviewAPIView,
+    SendInterviewRemindersAPIView,
 )
 urlpatterns = [
     path('signup/', SignupAPIView.as_view()),
@@ -85,4 +86,5 @@ urlpatterns = [
     path("availability/create/",CreateAvailabilitySlotAPIView.as_view(),),
     path("availability/",AvailabilityListAPIView.as_view(),),
     path("interview/book/",BookInterviewAPIView.as_view(),),
+    path("interviews/send-reminders/",SendInterviewRemindersAPIView.as_view(),),
 ]

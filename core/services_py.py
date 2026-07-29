@@ -248,3 +248,60 @@ def create_ai_interview_session(application):
     )
 
     return session
+
+def interview_day_before_template(
+    candidate_name,
+    job_title,
+    interview_date,
+    interview_time,
+):
+
+    subject = "Interview Reminder - Tomorrow"
+
+    message = f"""
+Hello {candidate_name},
+
+This is a reminder that your interview for
+
+'{job_title}'
+
+is scheduled for
+
+Date : {interview_date}
+Time : {interview_time}
+
+Please be available on time.
+
+Regards,
+ZecPath Team
+"""
+
+    return subject, message
+
+
+def interview_hour_before_template(
+    candidate_name,
+    job_title,
+    interview_time,
+):
+
+    subject = "Interview Reminder - Starting Soon"
+
+    message = f"""
+Hello {candidate_name},
+
+Your interview for
+
+'{job_title}'
+
+will begin at
+
+{interview_time}
+
+Please be ready.
+
+Regards,
+ZecPath Team
+"""
+
+    return subject, message

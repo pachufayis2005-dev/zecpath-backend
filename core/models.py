@@ -618,3 +618,45 @@ class InterviewSchedule(models.Model):
             f"{self.application.id} - "
             f"{self.status}"
         )
+
+class ReminderLog(models.Model):
+
+    DAY_BEFORE = "DAY_BEFORE"
+    HOUR_BEFORE = "HOUR_BEFORE"
+
+    REMINDER_TYPES = [
+        (DAY_BEFORE, "Day Before"),
+        (HOUR_BEFORE, "Hour Before"),
+    ]
+
+    interview = models.ForeignKey(
+        InterviewSchedule,
+        on_delete=models.CASCADE,
+        related_name="reminders",
+    )
+
+    reminder_type = models.CharField(
+        max_length=30,
+        choices=REMINDER_TYPES,
+    )
+
+    sent = models.BooleanField(default=False)
+
+    sent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    failure_reason = models.TextField(
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return (
+            f"{self.interview.id} - "
+            f"{self.reminder_type}"
+        )

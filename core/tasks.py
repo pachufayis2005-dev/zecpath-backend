@@ -1,8 +1,10 @@
 from celery import shared_task
 
-from .models import InterviewCall
+from .models import (InterviewCall,ReminderLog)
 from core.services.ai_bridge import AIBridgeService
 from core.services_py import send_email_notification
+from core.services import ReminderService
+
 
 
 @shared_task
@@ -50,3 +52,31 @@ def process_interview_calls():
         )
 
     return "Interview Processing Finished"
+
+@shared_task
+def send_interview_reminders():
+
+    service = ReminderService()
+
+    interviews = service.get_upcoming_interviews()
+
+    count = 0
+
+    for interview in interviews:
+
+        already_sent = ReminderLog.objects.filter(
+            interview=interview,
+            reminder_type=ReminderLog.DAY_BEFORE,
+        ).exists()
+
+        if already_sent:
+            continue
+
+        service.send_reminder(
+            interview,
+            ReminderLog.DAY_BEFORE,
+        )
+
+        count += 1
+
+    return f"{count} reminder(s) sent."
