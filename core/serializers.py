@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Job, Application,SavedJob,AuditLog
+from .models import (Job, Application,SavedJob,AuditLog,AvailabilitySlot,InterviewSchedule,)
 
 
 class JobSerializer(serializers.ModelSerializer):
@@ -68,3 +68,20 @@ class AuditLogSerializer(serializers.ModelSerializer):
 
 class SubmitAnswerSerializer(serializers.Serializer):
     answer = serializers.CharField()
+
+class AvailabilitySlotSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = AvailabilitySlot
+
+        fields = "__all__"
+
+
+class InterviewScheduleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = InterviewSchedule
+
+        fields = "__all__"

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 import re
-from .services import AnswerEvaluator
+from .services import (AnswerEvaluator,SchedulingEngine)
 from .utils import extract_resume_text,calculate_ats_score
 from .services_py import (
     auto_shortlist,
@@ -34,9 +34,11 @@ from .models import (
     SavedJob,
     AuditLog,
     InterviewCall,
-    AIAnswer
+    AIAnswer,
+    AvailabilitySlot,
+    InterviewSchedule,
 )
-from .serializers import JobSerializer
+from .serializers import (JobSerializer,AvailabilitySlotSerializer,InterviewScheduleSerializer,)
 from .utils import (
     extract_resume_text,
     extract_skills,
@@ -1593,3 +1595,96 @@ class AnswerScoreAPIView(APIView):
             "evaluated_at": answer.evaluated_at,
             "feedback": answer.ai_feedback,
         })
+
+class CreateAvailabilitySlotAPIView(APIView):
+
+    permission_classes = [IsAuthenticated, IsEmployer]
+
+    def post(self, request):
+
+        employer = request.user.employer
+
+        data = request.data.copy()
+
+        data["employer"] = employer.id
+
+        serializer = AvailabilitySlotSerializer(data=data)
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED,
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+class AvailabilityListAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        slots = AvailabilitySlot.objects.filter(
+            is_booked=False,
+        ).order_by(
+            "date",
+            "start_time",
+        )
+
+        serializer = AvailabilitySlotSerializer(
+            slots,
+            many=True,
+        )
+
+        return Response(serializer.data)
+
+class BookInterviewAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+
+        application_id = request.data.get("application_id")
+        slot_id = request.data.get("slot_id")
+
+        try:
+            application = Application.objects.get(id=application_id)
+            slot = AvailabilitySlot.objects.get(id=slot_id)
+
+        except (Application.DoesNotExist,
+                AvailabilitySlot.DoesNotExist):
+
+            return Response(
+                {"error": "Invalid application or slot"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if slot.is_booked:
+
+            return Response(
+                {"error": "Slot already booked"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        schedule = InterviewSchedule.objects.create(
+            application=application,
+            slot=slot,
+            status=InterviewSchedule.SCHEDULED,
+        )
+
+        slot.is_booked = True
+        slot.save()
+
+        return Response(
+            {
+                "message": "Interview booked successfully",
+                "schedule_id": schedule.id,
+            },
+            status=status.HTTP_201_CREATED,
+        )

@@ -539,3 +539,82 @@ class EmailLog(models.Model):
 
     def __str__(self):
         return self.subject
+
+class AvailabilitySlot(models.Model):
+
+    employer = models.ForeignKey(
+        Employer,
+        on_delete=models.CASCADE,
+        related_name="availability_slots",
+    )
+
+    date = models.DateField()
+
+    start_time = models.TimeField()
+
+    end_time = models.TimeField()
+
+    is_booked = models.BooleanField(
+        default=False
+    )
+
+    def __str__(self):
+
+        return (
+            f"{self.employer.user.username} "
+            f"{self.date} "
+            f"{self.start_time}"
+        )
+
+
+class InterviewSchedule(models.Model):
+
+    SCHEDULED = "SCHEDULED"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
+
+    STATUS_CHOICES = [
+
+        (SCHEDULED, "Scheduled"),
+        (COMPLETED, "Completed"),
+        (CANCELLED, "Cancelled"),
+    ]
+
+    application = models.OneToOneField(
+
+        Application,
+
+        on_delete=models.CASCADE,
+
+        related_name="schedule",
+    )
+
+    slot = models.OneToOneField(
+
+        AvailabilitySlot,
+
+        on_delete=models.CASCADE,
+
+        related_name="interview",
+    )
+
+    scheduled_at = models.DateTimeField(
+
+        auto_now_add=True
+    )
+
+    status = models.CharField(
+
+        max_length=20,
+
+        choices=STATUS_CHOICES,
+
+        default=SCHEDULED,
+    )
+
+    def __str__(self):
+
+        return (
+            f"{self.application.id} - "
+            f"{self.status}"
+        )

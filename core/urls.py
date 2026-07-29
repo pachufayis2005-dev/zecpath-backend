@@ -39,6 +39,9 @@ from .views import (
     ProcessApplicationsAPIView,
     SubmitAnswerAPIView,
     AnswerScoreAPIView,
+    CreateAvailabilitySlotAPIView,
+    AvailabilityListAPIView,
+    BookInterviewAPIView,
 )
 urlpatterns = [
     path('signup/', SignupAPIView.as_view()),
@@ -79,4 +82,7 @@ urlpatterns = [
     path("applications/process/",ProcessApplicationsAPIView.as_view(),),
     path("ai-answer/<int:answer_id>/submit/",SubmitAnswerAPIView.as_view(),),
     path("ai-answer/<int:pk>/score/",AnswerScoreAPIView.as_view(),),
+    path("availability/create/",CreateAvailabilitySlotAPIView.as_view(),),
+    path("availability/",AvailabilityListAPIView.as_view(),),
+    path("interview/book/",BookInterviewAPIView.as_view(),),
 ]
