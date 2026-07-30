@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 import re
 from .services import (AnswerEvaluator,SchedulingEngine)
+from .services.report_service import CandidateReportService
 from .utils import extract_resume_text,calculate_ats_score
 from .services_py import (
     auto_shortlist,
@@ -1701,3 +1702,21 @@ class SendInterviewRemindersAPIView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+class CandidateReportAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsEmployer]
+
+    def get(self, request, pk):
+
+        try:
+            application = Application.objects.get(pk=pk)
+
+        except Application.DoesNotExist:
+            return Response(
+                {"error": "Application not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        report = CandidateReportService().generate_report(application)
+
+        return Response(report)
