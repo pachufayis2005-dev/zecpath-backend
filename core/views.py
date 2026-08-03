@@ -1,7 +1,10 @@
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+
 from django.shortcuts import render
 
 import re
-from .services import (AnswerEvaluator,SchedulingEngine)
+from .services import (AnswerEvaluator,SchedulingEngine,AnalyticsService)
 from .services.report_service import CandidateReportService
 from .utils import extract_resume_text,calculate_ats_score
 from .services_py import (
@@ -1720,3 +1723,36 @@ class CandidateReportAPIView(APIView):
         report = CandidateReportService().generate_report(application)
 
         return Response(report)
+    
+@method_decorator(cache_page(60), name="dispatch")
+class HiringFunnelAPIView(APIView):
+
+    permission_classes = [IsAuthenticated, IsEmployer]
+
+    def get(self, request):
+
+        data = AnalyticsService().hiring_funnel()
+
+        return Response(data)
+
+@method_decorator(cache_page(60), name="dispatch")
+class JobPerformanceAPIView(APIView):
+
+    permission_classes = [IsAuthenticated, IsEmployer]
+
+    def get(self, request):
+
+        data = AnalyticsService().job_performance()
+
+        return Response(data)
+
+@method_decorator(cache_page(60), name="dispatch")
+class ConversionRatioAPIView(APIView):
+
+    permission_classes = [IsAuthenticated, IsEmployer]
+
+    def get(self, request):
+
+        data = AnalyticsService().conversion_ratios()
+
+        return Response(data)

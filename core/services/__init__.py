@@ -4,3 +4,4 @@ from .scoring_engine import ScoringEngine
 from .answer_evaluator import AnswerEvaluator
 from .scheduling_engine import SchedulingEngine
 from .reminder_service import ReminderService
+from .analytics_service import AnalyticsService
