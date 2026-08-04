@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission
+from core.services import LoggingService
 
 
 class IsAdmin(BasePermission):
@@ -9,7 +10,18 @@ class IsAdmin(BasePermission):
 class IsEmployer(BasePermission):
 
     def has_permission(self, request, view):
-        return request.user.role == "EMPLOYER"
+
+        if request.user.role != "EMPLOYER":
+
+            LoggingService().log_security(
+                user=request.user,
+                ip_address=request.META.get("REMOTE_ADDR"),
+                action="Unauthorized access to Employer API",
+            )
+
+            return False
+
+        return True
 
 class IsCandidate(BasePermission):
 

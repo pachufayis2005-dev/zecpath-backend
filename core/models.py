@@ -660,3 +660,103 @@ class ReminderLog(models.Model):
             f"{self.interview.id} - "
             f"{self.reminder_type}"
         )
+
+class ApplicationLog(models.Model):
+
+    INFO = "INFO"
+    WARNING = "WARNING"
+    ERROR = "ERROR"
+
+    LEVEL_CHOICES = [
+        (INFO, "Info"),
+        (WARNING, "Warning"),
+        (ERROR, "Error"),
+    ]
+
+    level = models.CharField(
+        max_length=20,
+        choices=LEVEL_CHOICES,
+        default=INFO,
+    )
+
+    message = models.TextField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return f"{self.level} - {self.created_at}"
+
+class SecurityLog(models.Model):
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    ip_address = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+    )
+
+    action = models.CharField(
+        max_length=200,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return self.action
+
+class AIEventLog(models.Model):
+
+    interview = models.ForeignKey(
+        InterviewCall,
+        on_delete=models.CASCADE,
+    )
+
+    event = models.CharField(
+        max_length=255,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return self.event
+
+class AuditTrail(models.Model):
+    """
+    Stores important user actions.
+    """
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    action = models.CharField(
+        max_length=255,
+    )
+
+    object_type = models.CharField(
+        max_length=100,
+    )
+
+    object_id = models.PositiveIntegerField()
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return f"{self.user} - {self.action}"
+    

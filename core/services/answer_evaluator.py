@@ -1,7 +1,7 @@
 from core.models import AIAnswer
 from core.services.scoring_engine import ScoringEngine
 from django.utils import timezone
-
+from core.services.logging_service import LoggingService
 
 class AnswerEvaluator:
     """
@@ -57,5 +57,8 @@ class AnswerEvaluator:
         ai_answer.evaluated_at = timezone.now()
 
         ai_answer.save()
+
+        LoggingService().log_ai_event(interview=ai_answer.question.session.interview_call,
+        event=f"AI evaluated answer. Score: {final}",)
 
         return ai_answer

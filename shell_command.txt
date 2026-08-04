@@ -1,0 +1,308 @@
+==========================================================
+ZECPATH DJANGO SHELL COMMANDS
+==========================================================
+
+Start Django Shell
+------------------
+python manage.py shell
+
+==========================================================
+USERS
+==========================================================
+
+from core.models import User
+
+User.objects.values(
+    "id",
+    "username",
+    "email",
+    "role",
+)
+
+Latest User
+
+User.objects.order_by("-id").values(
+    "id",
+    "username",
+    "role",
+).first()
+
+==========================================================
+CANDIDATES
+==========================================================
+
+from core.models import Candidate
+
+Candidate.objects.values(
+    "id",
+    "user__username",
+)
+
+Latest Candidate
+
+Candidate.objects.order_by("-id").values(
+    "id",
+    "user__username",
+).first()
+
+==========================================================
+EMPLOYERS
+==========================================================
+
+from core.models import Employer
+
+Employer.objects.values(
+    "id",
+    "user__username",
+)
+
+Latest Employer
+
+Employer.objects.order_by("-id").values(
+    "id",
+    "user__username",
+).first()
+
+==========================================================
+JOBS
+==========================================================
+
+from core.models import Job
+
+Job.objects.values(
+    "id",
+    "title",
+)
+
+Latest Job
+
+Job.objects.order_by("-id").values(
+    "id",
+    "title",
+).first()
+
+==========================================================
+APPLICATIONS
+==========================================================
+
+from core.models import Application
+
+Application.objects.values(
+    "id",
+    "candidate_id",
+    "job_id",
+    "status",
+)
+
+Latest Application
+
+Application.objects.order_by("-id").values(
+    "id",
+    "candidate_id",
+    "job_id",
+    "status",
+).first()
+
+==========================================================
+INTERVIEW CALLS
+==========================================================
+
+from core.models import InterviewCall
+
+InterviewCall.objects.values(
+    "id",
+    "application_id",
+    "status",
+)
+
+Latest Interview Call
+
+InterviewCall.objects.order_by("-id").values(
+    "id",
+    "application_id",
+).first()
+
+==========================================================
+AI INTERVIEW SESSIONS
+==========================================================
+
+from core.models import AIInterviewSession
+
+AIInterviewSession.objects.values(
+    "id",
+    "interview_call_id",
+)
+
+Latest Session
+
+AIInterviewSession.objects.order_by("-id").values(
+    "id",
+    "interview_call_id",
+).first()
+
+==========================================================
+AI QUESTIONS
+==========================================================
+
+from core.models import AIInterviewQuestion
+
+AIInterviewQuestion.objects.values(
+    "id",
+    "session_id",
+    "question",
+)
+
+Latest Question
+
+AIInterviewQuestion.objects.order_by("-id").values(
+    "id",
+    "session_id",
+).first()
+
+==========================================================
+AI ANSWERS
+==========================================================
+
+from core.models import AIAnswer
+
+AIAnswer.objects.values(
+    "id",
+    "question_id",
+    "answer",
+    "final_score",
+)
+
+Latest AI Answer
+
+AIAnswer.objects.order_by("-id").values(
+    "id",
+    "question_id",
+    "final_score",
+).first()
+
+==========================================================
+AVAILABILITY SLOTS
+==========================================================
+
+from core.models import AvailabilitySlot
+
+AvailabilitySlot.objects.values(
+    "id",
+    "date",
+    "start_time",
+    "end_time",
+    "is_booked",
+)
+
+==========================================================
+INTERVIEW SCHEDULES
+==========================================================
+
+from core.models import InterviewSchedule
+
+InterviewSchedule.objects.values(
+    "id",
+    "application_id",
+    "slot_id",
+)
+
+==========================================================
+REMINDER LOGS
+==========================================================
+
+from core.models import ReminderLog
+
+ReminderLog.objects.values(
+    "id",
+    "interview_id",
+    "reminder_type",
+    "sent",
+    "sent_at",
+)
+
+==========================================================
+AUDIT LOGS
+==========================================================
+
+from core.models import AuditLog
+
+AuditLog.objects.values(
+    "id",
+    "action",
+    "created_at",
+)
+
+==========================================================
+APPLICATION LOGS
+==========================================================
+
+from core.models import ApplicationLog
+
+ApplicationLog.objects.values(
+    "id",
+    "level",
+    "message",
+    "created_at",
+)
+
+==========================================================
+AI EVENT LOGS
+==========================================================
+
+from core.models import AIEventLog
+
+AIEventLog.objects.values(
+    "id",
+    "interview_id",
+    "event",
+    "created_at",
+)
+
+==========================================================
+SECURITY LOGS
+==========================================================
+
+from core.models import SecurityLog
+
+SecurityLog.objects.values(
+    "id",
+    "user_id",
+    "ip_address",
+    "action",
+    "created_at",
+)
+
+==========================================================
+COUNT RECORDS
+==========================================================
+
+from core.models import *
+
+User.objects.count()
+Candidate.objects.count()
+Employer.objects.count()
+Job.objects.count()
+Application.objects.count()
+InterviewCall.objects.count()
+AIInterviewSession.objects.count()
+AIInterviewQuestion.objects.count()
+AIAnswer.objects.count()
+AvailabilitySlot.objects.count()
+InterviewSchedule.objects.count()
+ReminderLog.objects.count()
+AuditLog.objects.count()
+ApplicationLog.objects.count()
+AIEventLog.objects.count()
+SecurityLog.objects.count()
+
+==========================================================
+DELETE ALL TEST DATA (USE CAREFULLY)
+==========================================================
+
+Application.objects.all().delete()
+InterviewCall.objects.all().delete()
+AIInterviewSession.objects.all().delete()
+AIInterviewQuestion.objects.all().delete()
+AIAnswer.objects.all().delete()
+
+==========================================================

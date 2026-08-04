@@ -4,7 +4,8 @@ from django.utils.decorators import method_decorator
 from django.shortcuts import render
 
 import re
-from .services import (AnswerEvaluator,SchedulingEngine,AnalyticsService)
+from .services import (AnswerEvaluator,SchedulingEngine,AnalyticsService,AuditService,)
+from .security import log_unauthorized_access
 from .services.report_service import CandidateReportService
 from .utils import extract_resume_text,calculate_ats_score
 from .services_py import (
@@ -1550,6 +1551,13 @@ class SubmitAnswerAPIView(APIView):
         evaluator = AnswerEvaluator()
         evaluator.evaluate(ai_answer)
 
+        AuditService().log_action(
+            user=request.user,
+            action="Submitted AI interview answer",
+            object_type="AIAnswer",
+            object_id=ai_answer.id,
+)
+
         return Response(
             {
                 "message": "Answer submitted successfully",
@@ -1649,28 +1657,22 @@ class AvailabilityListAPIView(APIView):
         return Response(serializer.data)
 
 class BookInterviewAPIView(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-
         application_id = request.data.get("application_id")
         slot_id = request.data.get("slot_id")
 
         try:
             application = Application.objects.get(id=application_id)
             slot = AvailabilitySlot.objects.get(id=slot_id)
-
-        except (Application.DoesNotExist,
-                AvailabilitySlot.DoesNotExist):
-
+        except (Application.DoesNotExist, AvailabilitySlot.DoesNotExist):
             return Response(
                 {"error": "Invalid application or slot"},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
         if slot.is_booked:
-
             return Response(
                 {"error": "Slot already booked"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -1685,13 +1687,19 @@ class BookInterviewAPIView(APIView):
         slot.is_booked = True
         slot.save()
 
+        AuditService().log_action(
+            user=request.user,
+            action="Booked interview",
+            object_type="InterviewSchedule",
+            object_id=schedule.id,)
+
         return Response(
-            {
-                "message": "Interview booked successfully",
-                "schedule_id": schedule.id,
-            },
-            status=status.HTTP_201_CREATED,
-        )
+    {
+        "message": "Interview booked successfully",
+        "schedule_id": schedule.id,
+    },
+    status=status.HTTP_201_CREATED,
+)
 
 class SendInterviewRemindersAPIView(APIView):
 
