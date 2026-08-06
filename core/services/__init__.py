@@ -7,3 +7,4 @@ from .reminder_service import ReminderService
 from .analytics_service import AnalyticsService
 from .logging_service import LoggingService
 from .audit_service import AuditService
+from .access_validation import AccessValidationService

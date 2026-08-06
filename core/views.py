@@ -4,9 +4,10 @@ from django.utils.decorators import method_decorator
 from django.shortcuts import render
 
 import re
-from .services import (AnswerEvaluator,SchedulingEngine,AnalyticsService,AuditService,)
+from .services import (AnswerEvaluator,SchedulingEngine,AnalyticsService,AuditService,AccessValidationService)
 from .security import log_unauthorized_access
 from .services.report_service import CandidateReportService
+from core.throttles import LoginRateThrottle
 from .utils import extract_resume_text,calculate_ats_score
 from .services_py import (
     auto_shortlist,
@@ -263,8 +264,10 @@ class AdminAPIView(APIView):
             "message": "Admin Access Granted"
         })
     
+
+
 class LoginAPIView(TokenObtainPairView):
-    pass
+    throttle_classes = [LoginRateThrottle]
 
 class CandidateProfileAPIView(APIView):
 
@@ -1366,62 +1369,6 @@ class RankedCandidatesAPIView(APIView):
             "ranked_candidates": data,
         })
 
-class UpdateApplicationStatusAPIView(APIView):
-
-    permission_classes = [
-        IsAuthenticated,
-        IsEmployer
-    ]
-
-    def patch(self, request, pk):
-
-        try:
-            application = Application.objects.get(id=pk)
-
-        except Application.DoesNotExist:
-
-            return Response(
-                {"error": "Application not found"},
-                status=404
-            )
-
-        if application.job.employer != request.user.employer:
-
-            return Response(
-                {"error": "Not your application"},
-                status=403
-            )
-
-        new_status = request.data.get("status")
-
-        valid_statuses = [
-
-            Application.SHORTLISTED,
-            Application.REJECTED,
-            Application.INTERVIEW_SCHEDULED,
-            Application.SELECTED,
-
-        ]
-
-        if new_status not in valid_statuses:
-
-            return Response(
-                {"error": "Invalid status"},
-                status=400
-            )
-
-        application.status = new_status
-
-        application.save()
-
-        serializer = ApplicationSerializer(application)
-
-        return Response(
-        {
-        "message": f"Candidate has been notified: Application {new_status}",
-        "application": serializer.data,
-        }
-)
 
 class ProcessApplicationsAPIView(APIView):
 
@@ -1462,14 +1409,11 @@ class UpdateApplicationStatusAPIView(APIView):
                 status=404
             )
 
-        if application.job.employer != request.user.employer:
+        AccessValidationService.validate_application_job_owner(
 
-            return Response(
-                {
-                    "error": "Not your job"
-                },
-                status=403
-            )
+            request.user,
+    application,
+)
 
         status = request.data.get("status")
 
@@ -1665,6 +1609,10 @@ class BookInterviewAPIView(APIView):
 
         try:
             application = Application.objects.get(id=application_id)
+            AccessValidationService.validate_application_owner(
+    request.user,
+    application,
+)
             slot = AvailabilitySlot.objects.get(id=slot_id)
         except (Application.DoesNotExist, AvailabilitySlot.DoesNotExist):
             return Response(
@@ -1727,6 +1675,11 @@ class CandidateReportAPIView(APIView):
                 {"error": "Application not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
+
+        AccessValidationService.validate_application_job_owner(
+            request.user,
+            application,
+        )
 
         report = CandidateReportService().generate_report(application)
 
