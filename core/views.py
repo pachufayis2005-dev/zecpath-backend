@@ -51,6 +51,16 @@ from .utils import (
     extract_experience,
     extract_education,
 )
+from rest_framework.throttling import AnonRateThrottle
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+
+class LoginRateThrottle(AnonRateThrottle):
+    scope = "login"
+
+
+class LoginAPIView(TokenObtainPairView):
+    throttle_classes = [LoginRateThrottle]
 
 
 class JobListAPIView(APIView):
@@ -266,8 +276,7 @@ class AdminAPIView(APIView):
     
 
 
-class LoginAPIView(TokenObtainPairView):
-    throttle_classes = [LoginRateThrottle]
+
 
 class CandidateProfileAPIView(APIView):
 
