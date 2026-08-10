@@ -759,4 +759,286 @@ class AuditTrail(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.action}"
+
+class SubscriptionPlan(models.Model):
+
+    FREE = "FREE"
+    PRO = "PRO"
+    ENTERPRISE = "ENTERPRISE"
+
+    PLAN_CHOICES = [
+        (FREE, "Free"),
+        (PRO, "Pro"),
+        (ENTERPRISE, "Enterprise"),
+    ]
+
+    MONTHLY = "MONTHLY"
+    YEARLY = "YEARLY"
+
+    BILLING_CYCLE_CHOICES = [
+        (MONTHLY, "Monthly"),
+        (YEARLY, "Yearly"),
+    ]
+
+    name = models.CharField(
+        max_length=20,
+        choices=PLAN_CHOICES,
+        unique=True,
+    )
+
+    description = models.TextField(
+        blank=True,
+    )
+
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+    )
+
+    currency = models.CharField(
+        max_length=10,
+        default="INR",
+    )
+
+    billing_cycle = models.CharField(
+        max_length=20,
+        choices=BILLING_CYCLE_CHOICES,
+        default=MONTHLY,
+    )
+
+    job_post_limit = models.PositiveIntegerField(
+        default=0,
+    )
+
+    ai_interview_limit = models.PositiveIntegerField(
+        default=0,
+    )
+
+    analytics_enabled = models.BooleanField(
+        default=False,
+    )
+
+    ai_analytics_enabled = models.BooleanField(
+        default=False,
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class UserSubscription(models.Model):
+
+    ACTIVE = "ACTIVE"
+    EXPIRED = "EXPIRED"
+    CANCELLED = "CANCELLED"
+    PENDING = "PENDING"
+
+    STATUS_CHOICES = [
+        (ACTIVE, "Active"),
+        (EXPIRED, "Expired"),
+        (CANCELLED, "Cancelled"),
+        (PENDING, "Pending"),
+    ]
+
+    employer = models.ForeignKey(
+        Employer,
+        on_delete=models.CASCADE,
+        related_name="subscriptions",
+    )
+
+    plan = models.ForeignKey(
+        SubscriptionPlan,
+        on_delete=models.PROTECT,
+        related_name="subscriptions",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=PENDING,
+    )
+
+    started_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    expires_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    auto_renew = models.BooleanField(
+        default=False,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    def __str__(self):
+        return (
+            f"{self.employer.company_name} - "
+            f"{self.plan.name} - "
+            f"{self.status}"
+        )
+
+
+class PaymentTransaction(models.Model):
+
+    PENDING = "PENDING"
+    SUCCESS = "SUCCESS"
+    FAILED = "FAILED"
+    REFUNDED = "REFUNDED"
+
+    STATUS_CHOICES = [
+        (PENDING, "Pending"),
+        (SUCCESS, "Success"),
+        (FAILED, "Failed"),
+        (REFUNDED, "Refunded"),
+    ]
+
+    employer = models.ForeignKey(
+        Employer,
+        on_delete=models.CASCADE,
+        related_name="payment_transactions",
+    )
+
+    subscription = models.ForeignKey(
+        UserSubscription,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payments",
+    )
+
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    currency = models.CharField(
+        max_length=10,
+        default="INR",
+    )
+
+    transaction_id = models.CharField(
+        max_length=200,
+        unique=True,
+    )
+
+    payment_method = models.CharField(
+        max_length=50,
+        blank=True,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=PENDING,
+    )
+
+    paid_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return self.transaction_id
+
+
+class BillingHistory(models.Model):
+
+    PAID = "PAID"
+    PENDING = "PENDING"
+    FAILED = "FAILED"
+    REFUNDED = "REFUNDED"
+
+    STATUS_CHOICES = [
+        (PAID, "Paid"),
+        (PENDING, "Pending"),
+        (FAILED, "Failed"),
+        (REFUNDED, "Refunded"),
+    ]
+
+    employer = models.ForeignKey(
+        Employer,
+        on_delete=models.CASCADE,
+        related_name="billing_history",
+    )
+
+    subscription = models.ForeignKey(
+        UserSubscription,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="billing_records",
+    )
+
+    transaction = models.ForeignKey(
+        PaymentTransaction,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="billing_records",
+    )
+
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    currency = models.CharField(
+        max_length=10,
+        default="INR",
+    )
+
+    billing_period_start = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    billing_period_end = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    invoice_number = models.CharField(
+        max_length=100,
+        unique=True,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=PENDING,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return self.invoice_number
     

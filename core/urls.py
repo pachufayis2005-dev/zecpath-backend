@@ -47,6 +47,7 @@ from .views import (
     HiringFunnelAPIView,
     JobPerformanceAPIView,
     ConversionRatioAPIView,
+    AIAnalyticsAPIView,
 )
 urlpatterns = [
     path('signup/', SignupAPIView.as_view()),
@@ -95,4 +96,5 @@ urlpatterns = [
     path("analytics/funnel/",HiringFunnelAPIView.as_view(),),
     path("analytics/jobs/",JobPerformanceAPIView.as_view(),),
     path("analytics/conversion/",ConversionRatioAPIView.as_view(),),
+    path("analytics/ai/",AIAnalyticsAPIView.as_view(),),
 ]

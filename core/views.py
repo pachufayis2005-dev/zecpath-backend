@@ -5,6 +5,10 @@ from django.shortcuts import render
 
 import re
 from .services import (AnswerEvaluator,SchedulingEngine,AnalyticsService,AuditService,AccessValidationService)
+from core.services.subscription_service import can_view_analytics
+from core.services.analytics_service import AnalyticsService
+from core.services.subscription_service import can_view_ai_analytics
+from core.services.subscription_service import can_post_job
 from .security import log_unauthorized_access
 from .services.report_service import CandidateReportService
 from core.throttles import LoginRateThrottle
@@ -174,6 +178,16 @@ class JobCreateAPIView(APIView):
 
     def post(self, request):
 
+        employer = request.user.employer
+
+        if not can_post_job(employer):
+            return Response(
+                {
+                    "error": "Your subscription does not allow you to post another job."
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         serializer = JobSerializer(
             data=request.data
         )
@@ -181,7 +195,7 @@ class JobCreateAPIView(APIView):
         if serializer.is_valid():
 
             serializer.save(
-                employer=request.user.employer
+                employer=employer
             )
 
             return Response(
@@ -1701,9 +1715,20 @@ class HiringFunnelAPIView(APIView):
 
     def get(self, request):
 
+        employer = request.user.employer
+
+        if not can_view_analytics(employer):
+            return Response(
+                {
+                    "error": "Your subscription does not allow access to analytics."
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         data = AnalyticsService().hiring_funnel()
 
         return Response(data)
+
 
 @method_decorator(cache_page(60), name="dispatch")
 class JobPerformanceAPIView(APIView):
@@ -1712,9 +1737,20 @@ class JobPerformanceAPIView(APIView):
 
     def get(self, request):
 
+        employer = request.user.employer
+
+        if not can_view_analytics(employer):
+            return Response(
+                {
+                    "error": "Your subscription does not allow access to analytics."
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         data = AnalyticsService().job_performance()
 
         return Response(data)
+
 
 @method_decorator(cache_page(60), name="dispatch")
 class ConversionRatioAPIView(APIView):
@@ -1723,6 +1759,39 @@ class ConversionRatioAPIView(APIView):
 
     def get(self, request):
 
+        employer = request.user.employer
+
+        if not can_view_analytics(employer):
+            return Response(
+                {
+                    "error": "Your subscription does not allow access to analytics."
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         data = AnalyticsService().conversion_ratios()
+
+        return Response(data)
+
+class AIAnalyticsAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer
+    ]
+
+    def get(self, request):
+
+        employer = request.user.employer
+
+        if not can_view_ai_analytics(employer):
+            return Response(
+                {
+                    "error": "Your subscription does not allow access to AI analytics."
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        data = AnalyticsService().ai_analytics(employer)
 
         return Response(data)
