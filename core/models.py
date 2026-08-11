@@ -944,6 +944,25 @@ class PaymentTransaction(models.Model):
         unique=True,
     )
 
+    razorpay_order_id = models.CharField(
+        max_length=200,
+        unique=True,
+        null=True,
+        blank=True,
+    )
+
+    razorpay_payment_id = models.CharField(
+        max_length=200,
+        unique=True,
+        null=True,
+        blank=True,
+    )
+
+    razorpay_signature = models.CharField(
+        max_length=500,
+        blank=True,
+    )
+
     payment_method = models.CharField(
         max_length=50,
         blank=True,
@@ -966,7 +985,6 @@ class PaymentTransaction(models.Model):
 
     def __str__(self):
         return self.transaction_id
-
 
 class BillingHistory(models.Model):
 

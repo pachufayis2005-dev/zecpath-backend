@@ -48,6 +48,10 @@ from .views import (
     JobPerformanceAPIView,
     ConversionRatioAPIView,
     AIAnalyticsAPIView,
+    CreatePaymentOrderAPIView,
+    VerifyPaymentAPIView,
+    CapturePaymentAPIView,
+    RazorpayWebhookAPIView,
 )
 urlpatterns = [
     path('signup/', SignupAPIView.as_view()),
@@ -97,4 +101,8 @@ urlpatterns = [
     path("analytics/jobs/",JobPerformanceAPIView.as_view(),),
     path("analytics/conversion/",ConversionRatioAPIView.as_view(),),
     path("analytics/ai/",AIAnalyticsAPIView.as_view(),),
+    path("payments/create-order/",CreatePaymentOrderAPIView.as_view(),),
+    path("payments/verify/",VerifyPaymentAPIView.as_view(),),
+    path("payments/capture/",CapturePaymentAPIView.as_view(),),
+    path("payments/webhook/",RazorpayWebhookAPIView.as_view(),),
 ]

@@ -1,7 +1,13 @@
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
-
 from django.shortcuts import render
+from django.conf import settings
+from django.utils import timezone
+from rest_framework.parsers import JSONParser
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
+from django.http import JsonResponse
+import json
 
 import re
 from .services import (AnswerEvaluator,SchedulingEngine,AnalyticsService,AuditService,AccessValidationService)
@@ -9,6 +15,7 @@ from core.services.subscription_service import can_view_analytics
 from core.services.analytics_service import AnalyticsService
 from core.services.subscription_service import can_view_ai_analytics
 from core.services.subscription_service import can_post_job
+from core.services.payment_service import PaymentService
 from .security import log_unauthorized_access
 from .services.report_service import CandidateReportService
 from core.throttles import LoginRateThrottle
@@ -1795,3 +1802,226 @@ class AIAnalyticsAPIView(APIView):
         data = AnalyticsService().ai_analytics(employer)
 
         return Response(data)
+
+class CreatePaymentOrderAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer,
+    ]
+
+    def post(self, request):
+
+        employer = request.user.employer
+
+        amount = request.data.get("amount")
+        currency = request.data.get("currency", "INR")
+
+        if not amount:
+            return Response(
+                {
+                    "error": "amount is required."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            data = PaymentService().create_order(
+                employer=employer,
+                amount=amount,
+                currency=currency,
+            )
+
+            return Response(
+                data,
+                status=status.HTTP_201_CREATED,
+            )
+
+        except ValueError as exc:
+            return Response(
+                {
+                    "error": str(exc)
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        except Exception:
+            return Response(
+                {
+                    "error": "Unable to create payment order."
+                },
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+class VerifyPaymentAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer,
+    ]
+
+    def post(self, request):
+
+        employer = request.user.employer
+
+        razorpay_order_id = request.data.get(
+            "razorpay_order_id"
+        )
+
+        razorpay_payment_id = request.data.get(
+            "razorpay_payment_id"
+        )
+
+        razorpay_signature = request.data.get(
+            "razorpay_signature"
+        )
+
+        if not all(
+            [
+                razorpay_order_id,
+                razorpay_payment_id,
+                razorpay_signature,
+            ]
+        ):
+            return Response(
+                {
+                    "error": "Payment verification fields are required."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            payment = PaymentService().verify_payment(
+                employer=employer,
+                razorpay_order_id=razorpay_order_id,
+                razorpay_payment_id=razorpay_payment_id,
+                razorpay_signature=razorpay_signature,
+            )
+
+            return Response(
+                {
+                    "message": "Payment verified successfully.",
+                    "transaction_id": payment.transaction_id,
+                    "payment_id": payment.razorpay_payment_id,
+                    "status": payment.status,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except ValueError as exc:
+            return Response(
+                {
+                    "error": str(exc)
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+class CapturePaymentAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer,
+    ]
+
+    def post(self, request):
+
+        employer = request.user.employer
+
+        payment_id = request.data.get(
+            "razorpay_payment_id"
+        )
+
+        amount = request.data.get("amount")
+
+        if not payment_id or not amount:
+            return Response(
+                {
+                    "error": "razorpay_payment_id and amount are required."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            result = PaymentService().capture_payment(
+                employer=employer,
+                razorpay_payment_id=payment_id,
+                amount=amount,
+            )
+
+            return Response(
+                {
+                    "message": "Payment captured successfully.",
+                    "payment": result,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except ValueError as exc:
+            return Response(
+                {
+                    "error": str(exc)
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        except Exception:
+            return Response(
+                {
+                    "error": "Unable to capture payment."
+                },
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+class RazorpayWebhookAPIView(APIView):
+
+    permission_classes = [
+        AllowAny,
+    ]
+
+    authentication_classes = []
+
+    def post(self, request):
+
+        signature = request.headers.get(
+            "X-Razorpay-Signature"
+        )
+
+        if not signature:
+            return Response(
+                {
+                    "error": "Webhook signature missing."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        raw_body = request.body
+
+        if not PaymentService().verify_webhook_signature(
+            raw_body,
+            signature,
+        ):
+            return Response(
+                {
+                    "error": "Invalid webhook signature."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            payload = json.loads(raw_body)
+        except json.JSONDecodeError:
+            return Response(
+                {
+                    "error": "Invalid webhook payload."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        PaymentService().process_webhook_event(payload)
+
+        return Response(
+            {
+                "message": "Webhook received successfully."
+            },
+            status=status.HTTP_200_OK,
+        )
