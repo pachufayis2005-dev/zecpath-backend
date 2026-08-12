@@ -52,6 +52,7 @@ from .views import (
     VerifyPaymentAPIView,
     CapturePaymentAPIView,
     RazorpayWebhookAPIView,
+    SubscriptionStatusAPIView,
 )
 urlpatterns = [
     path('signup/', SignupAPIView.as_view()),
@@ -105,4 +106,5 @@ urlpatterns = [
     path("payments/verify/",VerifyPaymentAPIView.as_view(),),
     path("payments/capture/",CapturePaymentAPIView.as_view(),),
     path("payments/webhook/",RazorpayWebhookAPIView.as_view(),),
+    path("subscription/status/",SubscriptionStatusAPIView.as_view(),),
 ]

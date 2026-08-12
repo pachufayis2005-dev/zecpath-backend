@@ -11,7 +11,8 @@ import json
 
 import re
 from .services import (AnswerEvaluator,SchedulingEngine,AnalyticsService,AuditService,AccessValidationService)
-from core.services.subscription_service import can_view_analytics
+from core.services.subscription_service import (can_view_analytics,can_post_job)
+from core.services.subscription_service import (get_subscription_status,)
 from core.services.analytics_service import AnalyticsService
 from core.services.subscription_service import can_view_ai_analytics
 from core.services.subscription_service import can_post_job
@@ -2023,5 +2024,23 @@ class RazorpayWebhookAPIView(APIView):
             {
                 "message": "Webhook received successfully."
             },
+            status=status.HTTP_200_OK,
+        )
+
+class SubscriptionStatusAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer,
+    ]
+
+    def get(self, request):
+
+        employer = request.user.employer
+
+        data = get_subscription_status(employer)
+
+        return Response(
+            data,
             status=status.HTTP_200_OK,
         )
