@@ -158,13 +158,14 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ),
 
-    "DEFAULT_THROTTLE_CLASSES": [
+    "DEFAULT_THROTTLE_CLASSES": (
         "rest_framework.throttling.UserRateThrottle",
-    ],
+    ),
 
     "DEFAULT_THROTTLE_RATES": {
         "user": "100/day",
-        "login": "5/min",
+        "login": "5/minute",
+        "premium_api": "30/minute",
     },
 }
 

@@ -19,7 +19,6 @@ from core.services.subscription_service import can_post_job
 from core.services.payment_service import PaymentService
 from .security import log_unauthorized_access
 from .services.report_service import CandidateReportService
-from core.throttles import LoginRateThrottle
 from .utils import extract_resume_text,calculate_ats_score
 from .services_py import (
     auto_shortlist,
@@ -32,6 +31,7 @@ from .services_py import (
     create_ai_interview_session,
 )
 from .tasks import (send_email_task,process_interview_calls,send_interview_reminders)
+from core.throttles import (LoginRateThrottle,PremiumAPIRateThrottle,)
 from .pagination import JobPagination
 from .profile_serializers import (CandidateProfileSerializer,EmployerProfileSerializer,)
 from .permissions import IsCandidate, IsEmployer, IsAdmin
@@ -63,12 +63,9 @@ from .utils import (
     extract_experience,
     extract_education,
 )
-from rest_framework.throttling import AnonRateThrottle
+
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-
-class LoginRateThrottle(AnonRateThrottle):
-    scope = "login"
 
 
 class LoginAPIView(TokenObtainPairView):
@@ -1354,52 +1351,75 @@ class RankedCandidatesAPIView(APIView):
 
     permission_classes = [
         IsAuthenticated,
-        IsEmployer
+        IsEmployer,
+    ]
+
+    throttle_classes = [
+        PremiumAPIRateThrottle,
     ]
 
     def get(self, request, pk):
 
-        try:
-            job = Job.objects.get(id=pk)
-        except Job.DoesNotExist:
+        employer = request.user.employer
+
+        if not can_view_ai_analytics(employer):
             return Response(
-                {"error": "Job not found"},
-                status=404
+                {
+                    "error": "Your subscription does not allow access to candidate ranking."
+                },
+                status=status.HTTP_403_FORBIDDEN,
             )
 
-        if job.employer != request.user.employer:
+        try:
+            job = Job.objects.get(id=pk)
+
+        except Job.DoesNotExist:
             return Response(
-                {"error": "Not your job"},
-                status=403
+                {
+                    "error": "Job not found"
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if job.employer != employer:
+            return Response(
+                {
+                    "error": "Not your job"
+                },
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         applications = (
-        Application.objects
-        .filter(job=job)
-        .select_related(
-        "candidate",
-        "candidate__user",
-    )
-    .order_by("-ats_score")
-)
+            Application.objects
+            .filter(job=job)
+            .select_related(
+                "candidate",
+                "candidate__user",
+            )
+            .order_by("-ats_score")
+        )
 
         data = []
 
         for application in applications:
-            data.append({
-                "candidate": application.candidate.user.username,
-                "ats_score": application.ats_score,
-                "suitability": f"{application.ats_score}%",
-                "status": application.status,
-                "applied_at": application.applied_at,
-            })
+            data.append(
+                {
+                    "candidate": application.candidate.user.username,
+                    "ats_score": application.ats_score,
+                    "suitability": f"{application.ats_score}%",
+                    "status": application.status,
+                    "applied_at": application.applied_at,
+                }
+            )
 
-        return Response({
-            "job": job.title,
-            "total_candidates": len(data),
-            "ranked_candidates": data,
-        })
-
+        return Response(
+            {
+                "job": job.title,
+                "total_candidates": len(data),
+                "ranked_candidates": data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 class ProcessApplicationsAPIView(APIView):
 
@@ -1694,16 +1714,36 @@ class SendInterviewRemindersAPIView(APIView):
         )
 
 class CandidateReportAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsEmployer]
+
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer,
+    ]
+
+    throttle_classes = [
+        PremiumAPIRateThrottle,
+    ]
 
     def get(self, request, pk):
+
+        employer = request.user.employer
+
+        if not can_view_ai_analytics(employer):
+            return Response(
+                {
+                    "error": "Your subscription does not allow access to candidate reports."
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         try:
             application = Application.objects.get(pk=pk)
 
         except Application.DoesNotExist:
             return Response(
-                {"error": "Application not found"},
+                {
+                    "error": "Application not found"
+                },
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -1712,14 +1752,26 @@ class CandidateReportAPIView(APIView):
             application,
         )
 
-        report = CandidateReportService().generate_report(application)
+        report = CandidateReportService().generate_report(
+            application
+        )
 
-        return Response(report)
+        return Response(
+            report,
+            status=status.HTTP_200_OK,
+        )
     
 @method_decorator(cache_page(60), name="dispatch")
 class HiringFunnelAPIView(APIView):
 
-    permission_classes = [IsAuthenticated, IsEmployer]
+    permission_classes = [
+        IsAuthenticated,
+        IsEmployer,
+    ]
+
+    throttle_classes = [
+        PremiumAPIRateThrottle,
+    ]
 
     def get(self, request):
 
@@ -1743,6 +1795,10 @@ class JobPerformanceAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsEmployer]
 
+    throttle_classes = [
+        PremiumAPIRateThrottle,
+    ]
+
     def get(self, request):
 
         employer = request.user.employer
@@ -1765,6 +1821,10 @@ class ConversionRatioAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsEmployer]
 
+    throttle_classes = [
+        PremiumAPIRateThrottle,
+    ]
+
     def get(self, request):
 
         employer = request.user.employer
@@ -1785,7 +1845,11 @@ class AIAnalyticsAPIView(APIView):
 
     permission_classes = [
         IsAuthenticated,
-        IsEmployer
+        IsEmployer,
+    ]
+
+    throttle_classes = [
+        PremiumAPIRateThrottle,
     ]
 
     def get(self, request):
@@ -2044,3 +2108,15 @@ class SubscriptionStatusAPIView(APIView):
             data,
             status=status.HTTP_200_OK,
         )
+
+class AuthTestAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        return Response({
+            "message": "Authentication working",
+            "user": request.user.username,
+            "user_id": request.user.id,
+        })
