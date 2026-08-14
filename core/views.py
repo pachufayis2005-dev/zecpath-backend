@@ -12,6 +12,7 @@ import json
 import re
 from .services import (AnswerEvaluator,SchedulingEngine,AnalyticsService,AuditService,AccessValidationService)
 from core.services.subscription_service import (can_view_analytics,can_post_job)
+from core.services.billing_service import BillingService
 from core.services.subscription_service import (get_subscription_status,)
 from core.services.analytics_service import AnalyticsService
 from core.services.subscription_service import can_view_ai_analytics
@@ -55,8 +56,13 @@ from .models import (
     AIAnswer,
     AvailabilitySlot,
     InterviewSchedule,
+    PaymentTransaction,
+    BillingHistory,
+    RefundRecord,
+    FinancialAuditLog,
 )
-from .serializers import (JobSerializer,AvailabilitySlotSerializer,InterviewScheduleSerializer,)
+from .serializers import (JobSerializer,AvailabilitySlotSerializer,InterviewScheduleSerializer,PaymentTransactionSerializer,
+BillingHistorySerializer,RefundRecordSerializer,FinancialAuditLogSerializer,)
 from .utils import (
     extract_resume_text,
     extract_skills,
@@ -2120,3 +2126,240 @@ class AuthTestAPIView(APIView):
             "user": request.user.username,
             "user_id": request.user.id,
         })
+
+class AdminTransactionListAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin,
+    ]
+
+    def get(self, request):
+
+        transactions = (
+            PaymentTransaction.objects
+            .select_related(
+                "employer",
+                "subscription__plan",
+            )
+            .order_by("-created_at")
+        )
+
+        serializer = PaymentTransactionSerializer(
+            transactions,
+            many=True,
+        )
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK,
+        )
+
+class AdminBillingHistoryAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin,
+    ]
+
+    def get(self, request):
+
+        records = (
+            BillingHistory.objects
+            .select_related(
+                "employer",
+                "subscription__plan",
+                "transaction",
+            )
+            .order_by("-created_at")
+        )
+
+        serializer = BillingHistorySerializer(
+            records,
+            many=True,
+        )
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK,
+        )
+class DailyRevenueAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin,
+    ]
+
+    def get(self, request):
+
+        data = BillingService.daily_revenue()
+
+        return Response(
+            data,
+            status=status.HTTP_200_OK,
+        )
+
+
+class MonthlyRevenueAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin,
+    ]
+
+    def get(self, request):
+
+        data = BillingService.monthly_revenue()
+
+        return Response(
+            data,
+            status=status.HTTP_200_OK,
+        )
+
+
+class PlanWiseRevenueAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin,
+    ]
+
+    def get(self, request):
+
+        data = BillingService.plan_wise_revenue()
+
+        return Response(
+            data,
+            status=status.HTTP_200_OK,
+        )
+
+
+class RevenueSummaryAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin,
+    ]
+
+    def get(self, request):
+
+        total = BillingService.total_revenue()
+
+        return Response(
+            {
+                "total_revenue": total,
+                "currency": "INR",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+class AdminRefundAPIView(APIView):
+
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin,
+    ]
+
+    def post(self, request, pk):
+
+        try:
+            transaction_obj = PaymentTransaction.objects.get(
+                pk=pk
+            )
+        except PaymentTransaction.DoesNotExist:
+            return Response(
+                {
+                    "error": "Transaction not found."
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        amount = request.data.get("amount")
+        reason = request.data.get(
+            "reason",
+            "Admin initiated refund",
+        )
+
+        try:
+
+            refund = PaymentService().refund_payment(
+                transaction=transaction_obj,
+                amount=amount,
+                reason=reason,
+            )
+
+            refund_record = RefundRecord.objects.create(
+                transaction=transaction_obj,
+                employer=transaction_obj.employer,
+                refund_id=refund["id"],
+                amount=(
+                    refund["amount"] / 100
+                ),
+                currency=refund.get(
+                    "currency",
+                    transaction_obj.currency,
+                ),
+                reason=reason,
+                status=RefundRecord.PROCESSED,
+                processed_at=timezone.now(),
+            )
+
+            transaction_obj.status = (
+                PaymentTransaction.REFUNDED
+            )
+            transaction_obj.save(
+                update_fields=["status"]
+            )
+
+            FinancialAuditLog.objects.create(
+                transaction=transaction_obj,
+                employer=transaction_obj.employer,
+                action=(
+                    FinancialAuditLog.REFUND_CREATED
+                ),
+                message=(
+                    f"Refund {refund_record.refund_id} "
+                    f"created for transaction "
+                    f"{transaction_obj.transaction_id}."
+                ),
+                ip_address=(
+                    request.META.get("REMOTE_ADDR")
+                ),
+            )
+
+            return Response(
+                RefundRecordSerializer(
+                    refund_record
+                ).data,
+                status=status.HTTP_201_CREATED,
+            )
+
+        except ValueError as exc:
+
+            return Response(
+                {
+                    "error": str(exc)
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        except Exception as exc:
+
+            FinancialAuditLog.objects.create(
+                transaction=transaction_obj,
+                employer=transaction_obj.employer,
+                action=(
+                    FinancialAuditLog.REFUND_FAILED
+                ),
+                message=str(exc),
+                ip_address=(
+                    request.META.get("REMOTE_ADDR")
+                ),
+            )
+
+            return Response(
+                {
+                    "error": "Refund failed."
+                },
+                status=status.HTTP_502_BAD_GATEWAY,
+            )

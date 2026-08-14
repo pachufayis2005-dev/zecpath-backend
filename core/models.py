@@ -1059,4 +1059,118 @@ class BillingHistory(models.Model):
 
     def __str__(self):
         return self.invoice_number
+
+
+class RefundRecord(models.Model):
+
+    PENDING = "PENDING"
+    PROCESSED = "PROCESSED"
+    FAILED = "FAILED"
+
+    STATUS_CHOICES = [
+        (PENDING, "Pending"),
+        (PROCESSED, "Processed"),
+        (FAILED, "Failed"),
+    ]
+
+    transaction = models.ForeignKey(
+        PaymentTransaction,
+        on_delete=models.CASCADE,
+        related_name="refunds",
+    )
+
+    employer = models.ForeignKey(
+        Employer,
+        on_delete=models.CASCADE,
+        related_name="refunds",
+    )
+
+    refund_id = models.CharField(
+        max_length=200,
+        unique=True,
+    )
+
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    currency = models.CharField(
+        max_length=10,
+        default="INR",
+    )
+
+    reason = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=PENDING,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    processed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    def __str__(self):
+        return self.refund_id
+
+class FinancialAuditLog(models.Model):
+
+    PAYMENT_SUCCESS = "PAYMENT_SUCCESS"
+    PAYMENT_FAILED = "PAYMENT_FAILED"
+    REFUND_CREATED = "REFUND_CREATED"
+    REFUND_FAILED = "REFUND_FAILED"
+    SUSPICIOUS_TRANSACTION = "SUSPICIOUS_TRANSACTION"
+
+    ACTION_CHOICES = [
+        (PAYMENT_SUCCESS, "Payment Success"),
+        (PAYMENT_FAILED, "Payment Failed"),
+        (REFUND_CREATED, "Refund Created"),
+        (REFUND_FAILED, "Refund Failed"),
+        (SUSPICIOUS_TRANSACTION, "Suspicious Transaction"),
+    ]
+
+    transaction = models.ForeignKey(
+        PaymentTransaction,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="financial_audit_logs",
+    )
+
+    employer = models.ForeignKey(
+        Employer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="financial_audit_logs",
+    )
+
+    action = models.CharField(
+        max_length=50,
+        choices=ACTION_CHOICES,
+    )
+
+    message = models.TextField()
+
+    ip_address = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return f"{self.action} - {self.created_at}"
     

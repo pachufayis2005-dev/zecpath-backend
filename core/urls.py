@@ -54,6 +54,13 @@ from .views import (
     RazorpayWebhookAPIView,
     SubscriptionStatusAPIView,
     AuthTestAPIView,
+    AdminTransactionListAPIView,
+    AdminBillingHistoryAPIView,
+    DailyRevenueAPIView,
+    MonthlyRevenueAPIView,
+    PlanWiseRevenueAPIView,
+    RevenueSummaryAPIView,
+    AdminRefundAPIView,
 )
 urlpatterns = [
     path('signup/', SignupAPIView.as_view()),
@@ -109,4 +116,11 @@ urlpatterns = [
     path("payments/webhook/",RazorpayWebhookAPIView.as_view(),),
     path("subscription/status/",SubscriptionStatusAPIView.as_view(),),
     path("auth-test/", AuthTestAPIView.as_view()),
+    path("admin/billing/transactions/",AdminTransactionListAPIView.as_view(),),
+    path("admin/billing/history/",AdminBillingHistoryAPIView.as_view(),),
+    path("admin/billing/revenue/daily/",DailyRevenueAPIView.as_view(),),
+    path("admin/billing/revenue/monthly/",MonthlyRevenueAPIView.as_view(),),
+    path("admin/billing/revenue/plans/",PlanWiseRevenueAPIView.as_view(),),
+    path("admin/billing/revenue/summary/",RevenueSummaryAPIView.as_view(),),
+    path("admin/billing/transactions/<int:pk>/refund/",AdminRefundAPIView.as_view(),),
 ]
