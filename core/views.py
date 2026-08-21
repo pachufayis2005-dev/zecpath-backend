@@ -239,6 +239,7 @@ class FeaturedJobAPIView(APIView):
 
 class LatestJobAPIView(APIView):
 
+    @method_decorator(cache_page(60 * 5))
     def get(self, request):
 
         jobs = Job.objects.filter(
