@@ -1,4 +1,5 @@
 from django.urls import path
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from .views import (
     SignupAPIView,
@@ -61,6 +62,7 @@ from .views import (
     PlanWiseRevenueAPIView,
     RevenueSummaryAPIView,
     AdminRefundAPIView,
+    LogoutAPIView,
 )
 urlpatterns = [
     path('signup/', SignupAPIView.as_view()),
@@ -123,4 +125,6 @@ urlpatterns = [
     path("admin/billing/revenue/plans/",PlanWiseRevenueAPIView.as_view(),),
     path("admin/billing/revenue/summary/",RevenueSummaryAPIView.as_view(),),
     path("admin/billing/transactions/<int:pk>/refund/",AdminRefundAPIView.as_view(),),
+    path('token/refresh/', TokenRefreshView.as_view()),
+    path('logout/', LogoutAPIView.as_view()),
 ]

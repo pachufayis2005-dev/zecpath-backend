@@ -11,6 +11,7 @@ import json
 
 import re
 from .services import (AnswerEvaluator,SchedulingEngine,AnalyticsService,AuditService,AccessValidationService)
+from rest_framework_simplejwt.tokens import RefreshToken
 from core.services.subscription_service import (can_view_analytics,can_post_job)
 from core.services.billing_service import BillingService
 from core.services.subscription_service import (get_subscription_status,)
@@ -76,6 +77,22 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 class LoginAPIView(TokenObtainPairView):
     throttle_classes = [LoginRateThrottle]
+
+
+class LogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except Exception:
+            return Response(
+                {"error": "Invalid or missing refresh token"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class JobListAPIView(APIView):
@@ -1525,15 +1542,33 @@ class UpdateApplicationStatusAPIView(APIView):
 
 class SubmitAnswerAPIView(APIView):
 
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, answer_id):
 
         try:
-            ai_answer = AIAnswer.objects.get(id=answer_id)
+            ai_answer = AIAnswer.objects.select_related(
+                "question__session__interview_call__application__candidate__user"
+            ).get(id=answer_id)
 
         except AIAnswer.DoesNotExist:
             return Response(
                 {"error": "Answer not found"},
                 status=status.HTTP_404_NOT_FOUND,
+            )
+
+        candidate = (
+            ai_answer.question
+            .session
+            .interview_call
+            .application
+            .candidate
+        )
+
+        if request.user != candidate.user:
+            return Response(
+                {"error": "Permission denied"},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         serializer = SubmitAnswerSerializer(
@@ -1557,7 +1592,7 @@ class SubmitAnswerAPIView(APIView):
             action="Submitted AI interview answer",
             object_type="AIAnswer",
             object_id=ai_answer.id,
-)
+        )
 
         return Response(
             {
@@ -1707,6 +1742,8 @@ class BookInterviewAPIView(APIView):
 )
 
 class SendInterviewRemindersAPIView(APIView):
+
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def post(self, request):
 
