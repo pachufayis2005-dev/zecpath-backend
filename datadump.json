@@ -1,0 +1,24 @@
+[
+{
+  "model": "core.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$rNj8dDVdaJfVMK9vUCp9ZV$lyz5Z6ilelSKNYDjIfV1tNY4C7e0iSnlHMNfzXDV00w=",
+    "last_login": "2026-08-20T05:42:48.107Z",
+    "is_superuser": true,
+    "username": "pachu",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-08-17T20:22:37.740Z",
+    "email": "pachu@gmail.com",
+    "phone": "",
+    "role": "",
+    "is_verified": false,
+    "created_at": "2026-08-17T20:22:38.346Z",
+    "updated_at": "2026-08-17T20:22:38.346Z",
+    "groups": [],
+    "user_permissions": []
+  }
+}
+]
