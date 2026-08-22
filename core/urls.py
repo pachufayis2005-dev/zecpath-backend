@@ -1,5 +1,6 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 from .views import (
     SignupAPIView,
@@ -127,4 +128,8 @@ urlpatterns = [
     path("admin/billing/transactions/<int:pk>/refund/",AdminRefundAPIView.as_view(),),
     path('token/refresh/', TokenRefreshView.as_view()),
     path('logout/', LogoutAPIView.as_view()),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+   
 ]
