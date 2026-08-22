@@ -199,7 +199,7 @@ class Job(models.Model):
             models.Index(fields=["status"]),
             models.Index(fields=["location"]),
             models.Index(fields=["job_type"]),
-
+            models.Index(fields=["status", "location"]),
         ]
 
     def __str__(self):
