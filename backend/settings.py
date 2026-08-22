@@ -176,6 +176,10 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Zecpath API',
     'DESCRIPTION': 'API documentation for the Zecpath job portal platform',
     'VERSION': '1.0.0',
+    'SECURITY': [{'Bearer': []}],
+    'SWAGGER_UI_SETTINGS': {
+        'persistAuthorization': True,
+    },
 }
 
 MEDIA_URL = '/media/'
