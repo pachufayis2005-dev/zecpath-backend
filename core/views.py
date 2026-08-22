@@ -72,10 +72,22 @@ from .utils import (
 )
 
 from rest_framework_simplejwt.views import TokenObtainPairView
+from drf_spectacular.utils import extend_schema, OpenApiExample
 
 
-
+@extend_schema(
+    summary="Login and get JWT tokens",
+    description="Authenticate with username and password. Returns access and refresh tokens.",
+    examples=[
+        OpenApiExample(
+            'Login request',
+            value={"username": "john_doe", "password": "yourpassword123"},
+            request_only=True,
+        )
+    ]
+)
 class LoginAPIView(TokenObtainPairView):
+    """Authenticate a user and return JWT access + refresh tokens."""
     throttle_classes = [LoginRateThrottle]
 
 
@@ -95,7 +107,12 @@ class LogoutAPIView(APIView):
             )
 
 
+@extend_schema(
+    summary="List all job postings",
+    description="Returns a list of active job postings available on the platform."
+)
 class JobListAPIView(APIView):
+    """Get a list of all active jobs."""
 
     def get(self, request):
 
@@ -528,7 +545,19 @@ class JobStatusAPIView(APIView):
             "status": job.status
         })
 
+@extend_schema(
+    summary="Apply to a job",
+    description="Candidate applies to a specific job posting by job ID. Requires an uploaded resume on the candidate's profile.",
+    examples=[
+        OpenApiExample(
+            'Apply request',
+            value={"cover_letter": "I am excited to apply for this role..."},
+            request_only=True,
+        )
+    ]
+)
 class ApplyJobAPIView(APIView):
+    """Submit a job application as a candidate."""
 
     permission_classes = [
         IsAuthenticated,
@@ -1290,7 +1319,14 @@ class AuditLogAPIView(APIView):
         )
 
         return Response(serializer.data)
+
+
+@extend_schema(
+    summary="Parse a resume",
+    description="Uploads and parses a resume file against a specific job, extracting skills, education, experience, and an ATS match score."
+)
 class ResumeParserAPIView(APIView):
+    """Extract structured data (skills, education, experience) from an uploaded resume and score it against a job."""
 
     permission_classes = [
         IsAuthenticated,
