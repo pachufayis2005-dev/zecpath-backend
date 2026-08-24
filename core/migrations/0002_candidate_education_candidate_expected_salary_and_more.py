@@ -6,53 +6,53 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0001_initial'),
+        ("core", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='candidate',
-            name='education',
+            model_name="candidate",
+            name="education",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='candidate',
-            name='expected_salary',
+            model_name="candidate",
+            name="expected_salary",
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='candidate',
-            name='experience',
+            model_name="candidate",
+            name="experience",
             field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AddField(
-            model_name='candidate',
-            name='is_active',
+            model_name="candidate",
+            name="is_active",
             field=models.BooleanField(default=True),
         ),
         migrations.AddField(
-            model_name='employer',
-            name='company_size',
+            model_name="employer",
+            name="company_size",
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='employer',
-            name='domain',
+            model_name="employer",
+            name="domain",
             field=models.CharField(blank=True, max_length=200),
         ),
         migrations.AddField(
-            model_name='employer',
-            name='is_active',
+            model_name="employer",
+            name="is_active",
             field=models.BooleanField(default=True),
         ),
         migrations.AddField(
-            model_name='employer',
-            name='is_verified',
+            model_name="employer",
+            name="is_verified",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name='candidate',
-            name='skills',
+            model_name="candidate",
+            name="skills",
             field=models.TextField(blank=True),
         ),
     ]

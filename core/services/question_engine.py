@@ -8,47 +8,35 @@ class QuestionEngine:
     """
 
     DEFAULT_QUESTIONS = [
-        {
-            "category": AIQuestion.INTRODUCTION,
-            "question": "Tell me about yourself."
-        },
+        {"category": AIQuestion.INTRODUCTION, "question": "Tell me about yourself."},
         {
             "category": AIQuestion.EXPERIENCE,
-            "question": "Describe your previous work experience."
+            "question": "Describe your previous work experience.",
         },
         {
             "category": AIQuestion.SKILLS,
-            "question": "What are your strongest technical skills?"
+            "question": "What are your strongest technical skills?",
         },
         {
             "category": AIQuestion.AVAILABILITY,
-            "question": "When can you join our company?"
+            "question": "When can you join our company?",
         },
         {
             "category": AIQuestion.SALARY,
-            "question": "What are your salary expectations?"
+            "question": "What are your salary expectations?",
         },
     ]
 
     DJANGO_QUESTIONS = [
-        {
-            "category": AIQuestion.SKILLS,
-            "question": "Explain Django ORM."
-        },
-        {
-            "category": AIQuestion.SKILLS,
-            "question": "What is Django REST Framework?"
-        },
+        {"category": AIQuestion.SKILLS, "question": "Explain Django ORM."},
+        {"category": AIQuestion.SKILLS, "question": "What is Django REST Framework?"},
     ]
 
     PYTHON_QUESTIONS = [
+        {"category": AIQuestion.SKILLS, "question": "Explain Python decorators."},
         {
             "category": AIQuestion.SKILLS,
-            "question": "Explain Python decorators."
-        },
-        {
-            "category": AIQuestion.SKILLS,
-            "question": "Difference between list and tuple?"
+            "question": "Difference between list and tuple?",
         },
     ]
 

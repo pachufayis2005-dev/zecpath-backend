@@ -1,9 +1,6 @@
 from decimal import Decimal
 
-from core.models import (
-    PaymentTransaction,
-    FinancialAuditLog,
-)
+from core.models import FinancialAuditLog
 
 
 class FinancialSecurityService:
@@ -23,10 +20,7 @@ class FinancialSecurityService:
         or exceeds the suspicious transaction threshold.
         """
 
-        return (
-            transaction.amount
-            >= FinancialSecurityService.SUSPICIOUS_AMOUNT
-        )
+        return transaction.amount >= FinancialSecurityService.SUSPICIOUS_AMOUNT
 
     @staticmethod
     def log_suspicious_transaction(transaction):
@@ -35,9 +29,7 @@ class FinancialSecurityService:
         is considered suspicious.
         """
 
-        if not FinancialSecurityService.is_suspicious(
-            transaction
-        ):
+        if not FinancialSecurityService.is_suspicious(transaction):
             return None
 
         return FinancialAuditLog.objects.create(

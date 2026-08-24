@@ -1,5 +1,7 @@
 from rest_framework.exceptions import PermissionDenied
+
 from core.models import SecurityLog
+
 
 class AccessValidationService:
 
@@ -14,9 +16,7 @@ class AccessValidationService:
                 ip_address="127.0.0.1",
             )
 
-            raise PermissionDenied(
-                "You cannot access this application."
-            )
+            raise PermissionDenied("You cannot access this application.")
 
     @staticmethod
     def validate_application_owner(user, application):
@@ -27,8 +27,6 @@ class AccessValidationService:
                 user=user,
                 action="Unauthorized application access",
                 ip_address="127.0.0.1",
-        )
+            )
 
-            raise PermissionDenied(
-                "You do not own this application."
-        )
+            raise PermissionDenied("You do not own this application.")

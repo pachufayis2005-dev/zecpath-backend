@@ -96,10 +96,6 @@ class ScoringEngine:
     ):
 
         return round(
-            (
-                relevance * 0.5
-                + completeness * 0.3
-                + confidence * 0.2
-            ),
+            (relevance * 0.5 + completeness * 0.3 + confidence * 0.2),
             2,
         )

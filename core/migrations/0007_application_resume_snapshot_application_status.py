@@ -6,18 +6,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0006_job_is_featured'),
+        ("core", "0006_job_is_featured"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='application',
-            name='resume_snapshot',
+            model_name="application",
+            name="resume_snapshot",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='application',
-            name='status',
-            field=models.CharField(choices=[('APPLIED', 'Applied'), ('UNDER_REVIEW', 'Under Review'), ('SHORTLISTED', 'Shortlisted'), ('REJECTED', 'Rejected')], default='APPLIED', max_length=20),
+            model_name="application",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("APPLIED", "Applied"),
+                    ("UNDER_REVIEW", "Under Review"),
+                    ("SHORTLISTED", "Shortlisted"),
+                    ("REJECTED", "Rejected"),
+                ],
+                default="APPLIED",
+                max_length=20,
+            ),
         ),
     ]

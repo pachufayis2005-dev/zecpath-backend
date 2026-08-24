@@ -1,7 +1,7 @@
 from core.models import (
+    AIEventLog,
     ApplicationLog,
     SecurityLog,
-    AIEventLog,
 )
 
 

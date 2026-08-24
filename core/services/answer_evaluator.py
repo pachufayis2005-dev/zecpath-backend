@@ -1,7 +1,8 @@
-from core.models import AIAnswer
-from core.services.scoring_engine import ScoringEngine
 from django.utils import timezone
+
 from core.services.logging_service import LoggingService
+from core.services.scoring_engine import ScoringEngine
+
 
 class AnswerEvaluator:
     """
@@ -15,14 +16,7 @@ class AnswerEvaluator:
 
         answer = ai_answer.answer
 
-        job_title = (
-            ai_answer.question
-            .session
-            .interview_call
-            .application
-            .job
-            .title
-        )
+        job_title = ai_answer.question.session.interview_call.application.job.title
 
         relevance, matched = self.engine.keyword_score(
             answer,
@@ -50,15 +44,16 @@ class AnswerEvaluator:
         ai_answer.matched_keywords = matched
 
         ai_answer.ai_feedback = (
-            f"Matched {len(matched)} keyword(s). "
-            f"Overall score: {final}"
+            f"Matched {len(matched)} keyword(s). " f"Overall score: {final}"
         )
 
         ai_answer.evaluated_at = timezone.now()
 
         ai_answer.save()
 
-        LoggingService().log_ai_event(interview=ai_answer.question.session.interview_call,
-        event=f"AI evaluated answer. Score: {final}",)
+        LoggingService().log_ai_event(
+            interview=ai_answer.question.session.interview_call,
+            event=f"AI evaluated answer. Score: {final}",
+        )
 
         return ai_answer

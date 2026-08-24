@@ -7,71 +7,215 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0026_audittrail'),
+        ("core", "0026_audittrail"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='SubscriptionPlan',
+            name="SubscriptionPlan",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(choices=[('FREE', 'Free'), ('PRO', 'Pro'), ('ENTERPRISE', 'Enterprise')], max_length=20, unique=True)),
-                ('description', models.TextField(blank=True)),
-                ('price', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
-                ('currency', models.CharField(default='INR', max_length=10)),
-                ('billing_cycle', models.CharField(choices=[('MONTHLY', 'Monthly'), ('YEARLY', 'Yearly')], default='MONTHLY', max_length=20)),
-                ('job_post_limit', models.PositiveIntegerField(default=0)),
-                ('ai_interview_limit', models.PositiveIntegerField(default=0)),
-                ('analytics_enabled', models.BooleanField(default=False)),
-                ('ai_analytics_enabled', models.BooleanField(default=False)),
-                ('is_active', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        choices=[
+                            ("FREE", "Free"),
+                            ("PRO", "Pro"),
+                            ("ENTERPRISE", "Enterprise"),
+                        ],
+                        max_length=20,
+                        unique=True,
+                    ),
+                ),
+                ("description", models.TextField(blank=True)),
+                (
+                    "price",
+                    models.DecimalField(decimal_places=2, default=0, max_digits=10),
+                ),
+                ("currency", models.CharField(default="INR", max_length=10)),
+                (
+                    "billing_cycle",
+                    models.CharField(
+                        choices=[("MONTHLY", "Monthly"), ("YEARLY", "Yearly")],
+                        default="MONTHLY",
+                        max_length=20,
+                    ),
+                ),
+                ("job_post_limit", models.PositiveIntegerField(default=0)),
+                ("ai_interview_limit", models.PositiveIntegerField(default=0)),
+                ("analytics_enabled", models.BooleanField(default=False)),
+                ("ai_analytics_enabled", models.BooleanField(default=False)),
+                ("is_active", models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='UserSubscription',
+            name="UserSubscription",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('status', models.CharField(choices=[('ACTIVE', 'Active'), ('EXPIRED', 'Expired'), ('CANCELLED', 'Cancelled'), ('PENDING', 'Pending')], default='PENDING', max_length=20)),
-                ('started_at', models.DateTimeField(blank=True, null=True)),
-                ('expires_at', models.DateTimeField(blank=True, null=True)),
-                ('auto_renew', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('employer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='subscriptions', to='core.employer')),
-                ('plan', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='subscriptions', to='core.subscriptionplan')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("ACTIVE", "Active"),
+                            ("EXPIRED", "Expired"),
+                            ("CANCELLED", "Cancelled"),
+                            ("PENDING", "Pending"),
+                        ],
+                        default="PENDING",
+                        max_length=20,
+                    ),
+                ),
+                ("started_at", models.DateTimeField(blank=True, null=True)),
+                ("expires_at", models.DateTimeField(blank=True, null=True)),
+                ("auto_renew", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "employer",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="subscriptions",
+                        to="core.employer",
+                    ),
+                ),
+                (
+                    "plan",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="subscriptions",
+                        to="core.subscriptionplan",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='PaymentTransaction',
+            name="PaymentTransaction",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('amount', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('currency', models.CharField(default='INR', max_length=10)),
-                ('transaction_id', models.CharField(max_length=200, unique=True)),
-                ('payment_method', models.CharField(blank=True, max_length=50)),
-                ('status', models.CharField(choices=[('PENDING', 'Pending'), ('SUCCESS', 'Success'), ('FAILED', 'Failed'), ('REFUNDED', 'Refunded')], default='PENDING', max_length=20)),
-                ('paid_at', models.DateTimeField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('employer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payment_transactions', to='core.employer')),
-                ('subscription', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='payments', to='core.usersubscription')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("amount", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("currency", models.CharField(default="INR", max_length=10)),
+                ("transaction_id", models.CharField(max_length=200, unique=True)),
+                ("payment_method", models.CharField(blank=True, max_length=50)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("PENDING", "Pending"),
+                            ("SUCCESS", "Success"),
+                            ("FAILED", "Failed"),
+                            ("REFUNDED", "Refunded"),
+                        ],
+                        default="PENDING",
+                        max_length=20,
+                    ),
+                ),
+                ("paid_at", models.DateTimeField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "employer",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="payment_transactions",
+                        to="core.employer",
+                    ),
+                ),
+                (
+                    "subscription",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="payments",
+                        to="core.usersubscription",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='BillingHistory',
+            name="BillingHistory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('amount', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('currency', models.CharField(default='INR', max_length=10)),
-                ('billing_period_start', models.DateTimeField(blank=True, null=True)),
-                ('billing_period_end', models.DateTimeField(blank=True, null=True)),
-                ('invoice_number', models.CharField(max_length=100, unique=True)),
-                ('status', models.CharField(choices=[('PAID', 'Paid'), ('PENDING', 'Pending'), ('FAILED', 'Failed'), ('REFUNDED', 'Refunded')], default='PENDING', max_length=20)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('employer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='billing_history', to='core.employer')),
-                ('transaction', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='billing_records', to='core.paymenttransaction')),
-                ('subscription', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='billing_records', to='core.usersubscription')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("amount", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("currency", models.CharField(default="INR", max_length=10)),
+                ("billing_period_start", models.DateTimeField(blank=True, null=True)),
+                ("billing_period_end", models.DateTimeField(blank=True, null=True)),
+                ("invoice_number", models.CharField(max_length=100, unique=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("PAID", "Paid"),
+                            ("PENDING", "Pending"),
+                            ("FAILED", "Failed"),
+                            ("REFUNDED", "Refunded"),
+                        ],
+                        default="PENDING",
+                        max_length=20,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "employer",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="billing_history",
+                        to="core.employer",
+                    ),
+                ),
+                (
+                    "transaction",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="billing_records",
+                        to="core.paymenttransaction",
+                    ),
+                ),
+                (
+                    "subscription",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="billing_records",
+                        to="core.usersubscription",
+                    ),
+                ),
             ],
         ),
     ]

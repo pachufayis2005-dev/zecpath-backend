@@ -1,6 +1,6 @@
 import os
-import time
 import random
+import time
 
 
 class AIBridgeService:
@@ -31,7 +31,7 @@ class AIBridgeService:
 
         return {
             "success": True,
-            "question": f"What interests you about the {job_title} role?"
+            "question": f"What interests you about the {job_title} role?",
         }
 
     # -------------------------------
@@ -42,10 +42,7 @@ class AIBridgeService:
 
         print("Converting speech to text...")
 
-        return {
-            "success": True,
-            "transcript": "This is a simulated transcript."
-        }
+        return {"success": True, "transcript": "This is a simulated transcript."}
 
     # -------------------------------
     # Text → Speech
@@ -55,21 +52,13 @@ class AIBridgeService:
 
         print(f"Generating speech using {voice} voice...")
 
-        return {
-            "success": True,
-            "audio_url": "/fake/audio/output.mp3"
-        }
+        return {"success": True, "audio_url": "/fake/audio/output.mp3"}
 
     # -------------------------------
     # Trigger Voice Call
     # -------------------------------
 
-    def trigger_call(
-        self,
-        phone_number,
-        language="English",
-        voice="Female"
-    ):
+    def trigger_call(self, phone_number, language="English", voice="Female"):
 
         print("=" * 50)
         print("Starting AI Voice Call")
@@ -80,11 +69,9 @@ class AIBridgeService:
 
         time.sleep(2)
 
-        return {
-            "success": True,
-            "call_id": random.randint(10000, 99999)
-        }
+        return {"success": True, "call_id": random.randint(10000, 99999)}
         # -------------------------------
+
     # Start AI Interview
     # -------------------------------
 

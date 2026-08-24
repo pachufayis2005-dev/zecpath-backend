@@ -1,20 +1,18 @@
-import hmac
 import hashlib
+import hmac
 import uuid
 from decimal import Decimal
 
 import razorpay
-
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
 from core.models import (
-    PaymentTransaction,
     BillingHistory,
     FinancialAuditLog,
+    PaymentTransaction,
 )
-
 from core.services.financial_security_service import (
     FinancialSecurityService,
 )
@@ -47,11 +45,7 @@ class PaymentService:
         payment is processed more than once.
         """
 
-        existing_record = (
-            BillingHistory.objects
-            .filter(transaction=payment)
-            .first()
-        )
+        existing_record = BillingHistory.objects.filter(transaction=payment).first()
 
         if existing_record:
             return existing_record
@@ -59,8 +53,7 @@ class PaymentService:
         now = timezone.now()
 
         invoice_number = (
-            f"INV-{now.strftime('%Y%m%d')}-"
-            f"{uuid.uuid4().hex[:12].upper()}"
+            f"INV-{now.strftime('%Y%m%d')}-" f"{uuid.uuid4().hex[:12].upper()}"
         )
 
         return BillingHistory.objects.create(
@@ -105,14 +98,10 @@ class PaymentService:
         )
 
         # Create billing history
-        PaymentService._create_billing_history(
-            payment
-        )
+        PaymentService._create_billing_history(payment)
 
         # Financial security monitoring
-        FinancialSecurityService.log_suspicious_transaction(
-            payment
-        )
+        FinancialSecurityService.log_suspicious_transaction(payment)
 
         # Financial audit log
         FinancialAuditLog.objects.create(
@@ -144,15 +133,11 @@ class PaymentService:
         amount = Decimal(str(amount))
 
         if amount <= 0:
-            raise ValueError(
-                "Payment amount must be greater than zero."
-            )
+            raise ValueError("Payment amount must be greater than zero.")
 
         amount_paise = int(amount * 100)
 
-        receipt = (
-            f"receipt_{uuid.uuid4().hex[:20]}"
-        )
+        receipt = f"receipt_{uuid.uuid4().hex[:20]}"
 
         order = self.client.order.create(
             data={
@@ -163,22 +148,18 @@ class PaymentService:
             }
         )
 
-        payment_transaction = (
-            PaymentTransaction.objects.create(
-                employer=employer,
-                subscription=subscription,
-                amount=amount,
-                currency=currency,
-                transaction_id=order["id"],
-                razorpay_order_id=order["id"],
-                status=PaymentTransaction.PENDING,
-            )
+        payment_transaction = PaymentTransaction.objects.create(
+            employer=employer,
+            subscription=subscription,
+            amount=amount,
+            currency=currency,
+            transaction_id=order["id"],
+            razorpay_order_id=order["id"],
+            status=PaymentTransaction.PENDING,
         )
 
         return {
-            "transaction_id": (
-                payment_transaction.transaction_id
-            ),
+            "transaction_id": (payment_transaction.transaction_id),
             "razorpay_order_id": order["id"],
             "amount": amount,
             "amount_paise": amount_paise,
@@ -206,39 +187,25 @@ class PaymentService:
         The payment becomes SUCCESS after capture.
         """
 
-        payment = (
-            PaymentTransaction.objects
-            .filter(
-                employer=employer,
-                razorpay_order_id=razorpay_order_id,
-            )
-            .first()
-        )
+        payment = PaymentTransaction.objects.filter(
+            employer=employer,
+            razorpay_order_id=razorpay_order_id,
+        ).first()
 
         if not payment:
-            raise ValueError(
-                "Payment transaction not found."
-            )
+            raise ValueError("Payment transaction not found.")
 
         # Prevent duplicate processing
         if payment.razorpay_payment_id:
 
-            if (
-                payment.razorpay_payment_id
-                == razorpay_payment_id
-            ):
+            if payment.razorpay_payment_id == razorpay_payment_id:
                 return payment
 
-            raise ValueError(
-                "Payment has already been processed."
-            )
+            raise ValueError("Payment has already been processed.")
 
         generated_signature = hmac.new(
             settings.RAZORPAY_KEY_SECRET.encode(),
-            (
-                f"{razorpay_order_id}|"
-                f"{razorpay_payment_id}"
-            ).encode(),
+            (f"{razorpay_order_id}|" f"{razorpay_payment_id}").encode(),
             hashlib.sha256,
         ).hexdigest()
 
@@ -248,9 +215,7 @@ class PaymentService:
             razorpay_signature,
         ):
 
-            payment.status = (
-                PaymentTransaction.FAILED
-            )
+            payment.status = PaymentTransaction.FAILED
 
             payment.save(
                 update_fields=[
@@ -261,9 +226,7 @@ class PaymentService:
             FinancialAuditLog.objects.create(
                 transaction=payment,
                 employer=payment.employer,
-                action=(
-                    FinancialAuditLog.PAYMENT_FAILED
-                ),
+                action=(FinancialAuditLog.PAYMENT_FAILED),
                 message=(
                     "Payment verification failed "
                     "because the Razorpay signature "
@@ -271,20 +234,14 @@ class PaymentService:
                 ),
             )
 
-            raise ValueError(
-                "Invalid payment signature."
-            )
+            raise ValueError("Invalid payment signature.")
 
         # Signature is valid.
         # Payment remains PENDING until capture.
 
-        payment.razorpay_payment_id = (
-            razorpay_payment_id
-        )
+        payment.razorpay_payment_id = razorpay_payment_id
 
-        payment.razorpay_signature = (
-            razorpay_signature
-        )
+        payment.razorpay_signature = razorpay_signature
 
         payment.save(
             update_fields=[
@@ -322,32 +279,20 @@ class PaymentService:
         Suspicious transaction check
         """
 
-        payment = (
-            PaymentTransaction.objects
-            .filter(
-                employer=employer,
-                razorpay_payment_id=(
-                    razorpay_payment_id
-                ),
-            )
-            .first()
-        )
+        payment = PaymentTransaction.objects.filter(
+            employer=employer,
+            razorpay_payment_id=(razorpay_payment_id),
+        ).first()
 
         if not payment:
-            raise ValueError(
-                "Payment transaction not found."
-            )
+            raise ValueError("Payment transaction not found.")
 
         amount_decimal = Decimal(str(amount))
 
         if amount_decimal <= 0:
-            raise ValueError(
-                "Payment amount must be greater than zero."
-            )
+            raise ValueError("Payment amount must be greater than zero.")
 
-        amount_paise = int(
-            amount_decimal * 100
-        )
+        amount_paise = int(amount_decimal * 100)
 
         result = self.client.payment.capture(
             razorpay_payment_id,
@@ -403,19 +348,9 @@ class PaymentService:
 
         event = payload.get("event")
 
-        payment_entity = (
-            payload
-            .get("payload", {})
-            .get("payment", {})
-            .get("entity", {})
-        )
+        payment_entity = payload.get("payload", {}).get("payment", {}).get("entity", {})
 
-        refund_entity = (
-            payload
-            .get("payload", {})
-            .get("refund", {})
-            .get("entity", {})
-        )
+        refund_entity = payload.get("payload", {}).get("refund", {}).get("entity", {})
 
         # -----------------------------------------------------
         # PAYMENT EVENTS
@@ -426,17 +361,11 @@ class PaymentService:
             "payment.failed",
         ]:
 
-            payment_id = payment_entity.get(
-                "id"
-            )
+            payment_id = payment_entity.get("id")
 
-            payment = (
-                PaymentTransaction.objects
-                .filter(
-                    razorpay_payment_id=payment_id
-                )
-                .first()
-            )
+            payment = PaymentTransaction.objects.filter(
+                razorpay_payment_id=payment_id
+            ).first()
 
             if not payment:
                 return
@@ -445,25 +374,18 @@ class PaymentService:
             if event == "payment.captured":
 
                 # Avoid duplicate webhook processing
-                if payment.status == (
-                    PaymentTransaction.SUCCESS
-                ):
+                if payment.status == (PaymentTransaction.SUCCESS):
                     return
 
                 self._mark_payment_success(
                     payment,
-                    (
-                        "Payment captured successfully "
-                        "through Razorpay webhook."
-                    ),
+                    ("Payment captured successfully " "through Razorpay webhook."),
                 )
 
             # PAYMENT FAILED
             elif event == "payment.failed":
 
-                payment.status = (
-                    PaymentTransaction.FAILED
-                )
+                payment.status = PaymentTransaction.FAILED
 
                 payment.save(
                     update_fields=[
@@ -474,13 +396,8 @@ class PaymentService:
                 FinancialAuditLog.objects.create(
                     transaction=payment,
                     employer=payment.employer,
-                    action=(
-                        FinancialAuditLog.PAYMENT_FAILED
-                    ),
-                    message=(
-                        "Payment failed according "
-                        "to Razorpay webhook."
-                    ),
+                    action=(FinancialAuditLog.PAYMENT_FAILED),
+                    message=("Payment failed according " "to Razorpay webhook."),
                 )
 
         # -----------------------------------------------------
@@ -493,17 +410,11 @@ class PaymentService:
             "refund.failed",
         ]:
 
-            payment_id = refund_entity.get(
-                "payment_id"
-            )
+            payment_id = refund_entity.get("payment_id")
 
-            payment = (
-                PaymentTransaction.objects
-                .filter(
-                    razorpay_payment_id=payment_id
-                )
-                .first()
-            )
+            payment = PaymentTransaction.objects.filter(
+                razorpay_payment_id=payment_id
+            ).first()
 
             if not payment:
                 return
@@ -511,9 +422,7 @@ class PaymentService:
             # REFUND PROCESSED
             if event == "refund.processed":
 
-                payment.status = (
-                    PaymentTransaction.REFUNDED
-                )
+                payment.status = PaymentTransaction.REFUNDED
 
                 payment.save(
                     update_fields=[
@@ -524,9 +433,7 @@ class PaymentService:
             # REFUND FAILED
             elif event == "refund.failed":
 
-                payment.status = (
-                    PaymentTransaction.SUCCESS
-                )
+                payment.status = PaymentTransaction.SUCCESS
 
                 payment.save(
                     update_fields=[
@@ -548,38 +455,24 @@ class PaymentService:
         Creates a Razorpay refund for a successful payment.
         """
 
-        if transaction.status != (
-            PaymentTransaction.SUCCESS
-        ):
-            raise ValueError(
-                "Only successful payments can be refunded."
-            )
+        if transaction.status != (PaymentTransaction.SUCCESS):
+            raise ValueError("Only successful payments can be refunded.")
 
         if not transaction.razorpay_payment_id:
-            raise ValueError(
-                "Razorpay payment ID is missing."
-            )
+            raise ValueError("Razorpay payment ID is missing.")
 
         refund_data = {}
 
         if amount is not None:
 
-            amount_decimal = Decimal(
-                str(amount)
-            )
+            amount_decimal = Decimal(str(amount))
 
             if amount_decimal <= 0:
-                raise ValueError(
-                    "Refund amount must be greater than zero."
-                )
+                raise ValueError("Refund amount must be greater than zero.")
 
-            amount_in_paise = int(
-                amount_decimal * 100
-            )
+            amount_in_paise = int(amount_decimal * 100)
 
-            refund_data["amount"] = (
-                amount_in_paise
-            )
+            refund_data["amount"] = amount_in_paise
 
         refund_data["notes"] = {
             "reason": reason[:256],

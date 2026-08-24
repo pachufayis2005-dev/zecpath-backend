@@ -1,15 +1,16 @@
+import random
 import threading
 
-
 from core.services.question_engine import QuestionEngine
+
 from .models import (
-    Application,
-    EmailLog,
-    Job,
+    AIAnswer,
     AIInterviewSession,
     AIQuestion,
-    AIAnswer,
+    Application,
     CallLog,
+    EmailLog,
+    Job,
 )
 from .utils import calculate_ats_score
 
@@ -31,12 +32,10 @@ def auto_shortlist(application):
 
     return application
 
+
 def check_candidate_eligibility(job, parsed_resume):
 
-    ats_result = calculate_ats_score(
-        job,
-        parsed_resume
-    )
+    ats_result = calculate_ats_score(job, parsed_resume)
 
     if ats_result["score"] >= 50:
 
@@ -44,11 +43,10 @@ def check_candidate_eligibility(job, parsed_resume):
 
     return False
 
+
 def process_pending_applications():
 
-    pending = Application.objects.filter(
-        status=Application.APPLIED
-    )
+    pending = Application.objects.filter(status=Application.APPLIED)
 
     updated = 0
 
@@ -60,7 +58,6 @@ def process_pending_applications():
 
     return updated
 
-import random
 
 def send_email_notification(
     recipient,
@@ -68,7 +65,6 @@ def send_email_notification(
     message,
     max_retries=3,
 ):
-    from core.models import EmailLog
 
     attempt = 0
     success = False
@@ -114,12 +110,14 @@ def send_email_notification(
 
     return success
 
+
 def send_email_notification_async(recipient, subject, message, max_retries=3):
     thread = threading.Thread(
         target=send_email_notification,
         args=(recipient, subject, message, max_retries),
     )
     thread.start()
+
 
 def application_submitted_template(
     candidate_name,
@@ -144,6 +142,7 @@ ZecPath Team
 """
 
     return subject, message
+
 
 def shortlisted_template(candidate_name, job_title):
 
@@ -188,6 +187,7 @@ ZecPath Team
 
     return subject, message
 
+
 def check_application_eligibility(application):
     """
     Check whether an application is eligible
@@ -211,6 +211,7 @@ def check_application_eligibility(application):
 
     return True
 
+
 def create_ai_interview_session(application):
     """
     Create interview session, default questions,
@@ -223,22 +224,20 @@ def create_ai_interview_session(application):
 
     engine = QuestionEngine()
 
-    questions = engine.generate_questions(
-             application.job.title
-        )
+    questions = engine.generate_questions(application.job.title)
 
     for item in questions:
 
         ai_question = AIQuestion.objects.create(
-        session=session,
-        category=item["category"],
-        question=item["question"],
+            session=session,
+            category=item["category"],
+            question=item["question"],
         )
 
         AIAnswer.objects.create(
-        question=ai_question,
-        answer="",
-        transcript={},
+            question=ai_question,
+            answer="",
+            transcript={},
         )
 
     CallLog.objects.create(
@@ -248,6 +247,7 @@ def create_ai_interview_session(application):
     )
 
     return session
+
 
 def interview_day_before_template(
     candidate_name,

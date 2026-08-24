@@ -7,22 +7,40 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0011_auditlog'),
+        ("core", "0011_auditlog"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ATSScore',
+            name="ATSScore",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('score', models.FloatField(default=0)),
-                ('matched_skills', models.JSONField(default=list)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('candidate', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.candidate')),
-                ('job', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.job')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("score", models.FloatField(default=0)),
+                ("matched_skills", models.JSONField(default=list)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "candidate",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="core.candidate"
+                    ),
+                ),
+                (
+                    "job",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="core.job"
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('candidate', 'job')},
+                "unique_together": {("candidate", "job")},
             },
         ),
     ]

@@ -6,38 +6,38 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0020_aiquestion_category'),
+        ("core", "0020_aiquestion_category"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='aianswer',
-            name='ai_feedback',
+            model_name="aianswer",
+            name="ai_feedback",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='aianswer',
-            name='completeness_score',
+            model_name="aianswer",
+            name="completeness_score",
             field=models.FloatField(default=0),
         ),
         migrations.AddField(
-            model_name='aianswer',
-            name='confidence_score',
+            model_name="aianswer",
+            name="confidence_score",
             field=models.FloatField(default=0),
         ),
         migrations.AddField(
-            model_name='aianswer',
-            name='final_score',
+            model_name="aianswer",
+            name="final_score",
             field=models.FloatField(default=0),
         ),
         migrations.AddField(
-            model_name='aianswer',
-            name='matched_keywords',
+            model_name="aianswer",
+            name="matched_keywords",
             field=models.JSONField(default=list),
         ),
         migrations.AddField(
-            model_name='aianswer',
-            name='relevance_score',
+            model_name="aianswer",
+            name="relevance_score",
             field=models.FloatField(default=0),
         ),
     ]

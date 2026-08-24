@@ -1,6 +1,7 @@
-from django.db.models import Count, Q, Avg
+from django.db.models import Avg, Count, Q
 
 from core.models import Application
+
 
 class AnalyticsService:
     """
@@ -10,25 +11,17 @@ class AnalyticsService:
     def hiring_funnel(self):
 
         return {
-            "applied": Application.objects.filter(
-                status=Application.APPLIED
-            ).count(),
-
+            "applied": Application.objects.filter(status=Application.APPLIED).count(),
             "under_review": Application.objects.filter(
                 status=Application.UNDER_REVIEW
             ).count(),
-
             "shortlisted": Application.objects.filter(
                 status=Application.SHORTLISTED
             ).count(),
-
             "interviewed": Application.objects.filter(
                 status=Application.INTERVIEW_SCHEDULED
             ).count(),
-
-            "selected": Application.objects.filter(
-                status=Application.SELECTED
-            ).count(),
+            "selected": Application.objects.filter(status=Application.SELECTED).count(),
         }
 
     def job_performance(self):
@@ -36,42 +29,26 @@ class AnalyticsService:
         from core.models import Job
 
         jobs = Job.objects.annotate(
-
             applications=Count("application"),
-
             under_review=Count(
                 "application",
-                filter=Q(
-                    application__status=Application.UNDER_REVIEW
-                ),
+                filter=Q(application__status=Application.UNDER_REVIEW),
             ),
-
             shortlisted=Count(
                 "application",
-                filter=Q(
-                    application__status=Application.SHORTLISTED
-                ),
+                filter=Q(application__status=Application.SHORTLISTED),
             ),
-
             interviewed=Count(
                 "application",
-                filter=Q(
-                    application__status=Application.INTERVIEW_SCHEDULED
-                ),
+                filter=Q(application__status=Application.INTERVIEW_SCHEDULED),
             ),
-
             selected=Count(
                 "application",
-                filter=Q(
-                    application__status=Application.SELECTED
-                ),
+                filter=Q(application__status=Application.SELECTED),
             ),
-
             rejected=Count(
                 "application",
-                filter=Q(
-                    application__status=Application.REJECTED
-                ),
+                filter=Q(application__status=Application.REJECTED),
             ),
         )
 
@@ -106,32 +83,24 @@ class AnalyticsService:
                 "selection_rate": 0,
             }
 
-        shortlisted = Application.objects.filter(
-            status=Application.SHORTLISTED
-        ).count()
+        shortlisted = Application.objects.filter(status=Application.SHORTLISTED).count()
 
         interviewed = Application.objects.filter(
             status=Application.INTERVIEW_SCHEDULED
         ).count()
 
-        selected = Application.objects.filter(
-            status=Application.SELECTED
-        ).count()
+        selected = Application.objects.filter(status=Application.SELECTED).count()
 
         return {
-
             "total_applications": total,
-
             "shortlist_rate": round(
                 shortlisted / total * 100,
                 2,
             ),
-
             "interview_rate": round(
                 interviewed / total * 100,
                 2,
             ),
-
             "selection_rate": round(
                 selected / total * 100,
                 2,
@@ -167,22 +136,18 @@ class AnalyticsService:
 
         return {
             "total_answers": total_answers,
-
             "average_score": round(
                 averages["average_score"] or 0,
                 2,
             ),
-
             "average_relevance": round(
                 averages["average_relevance"] or 0,
                 2,
             ),
-
             "average_completeness": round(
                 averages["average_completeness"] or 0,
                 2,
             ),
-
             "average_confidence": round(
                 averages["average_confidence"] or 0,
                 2,

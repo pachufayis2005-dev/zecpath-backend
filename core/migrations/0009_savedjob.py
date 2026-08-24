@@ -7,17 +7,35 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0008_application_status_updated_at_application_updated_at_and_more'),
+        ("core", "0008_application_status_updated_at_application_updated_at_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='SavedJob',
+            name="SavedJob",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('saved_at', models.DateTimeField(auto_now_add=True)),
-                ('candidate', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.candidate')),
-                ('job', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='core.job')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("saved_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "candidate",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="core.candidate"
+                    ),
+                ),
+                (
+                    "job",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="core.job"
+                    ),
+                ),
             ],
         ),
     ]

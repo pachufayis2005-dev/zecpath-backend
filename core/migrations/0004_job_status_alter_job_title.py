@@ -6,18 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0003_candidate_resume_alter_candidate_education_and_more'),
+        ("core", "0003_candidate_resume_alter_candidate_education_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='job',
-            name='status',
-            field=models.CharField(choices=[('ACTIVE', 'Active'), ('CLOSED', 'Closed')], default='ACTIVE', max_length=20),
+            model_name="job",
+            name="status",
+            field=models.CharField(
+                choices=[("ACTIVE", "Active"), ("CLOSED", "Closed")],
+                default="ACTIVE",
+                max_length=20,
+            ),
         ),
         migrations.AlterField(
-            model_name='job',
-            name='title',
+            model_name="job",
+            name="title",
             field=models.CharField(db_index=True, max_length=200),
         ),
     ]

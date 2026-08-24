@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0005_job_experience_job_job_type_job_location_job_salary_and_more'),
+        ("core", "0005_job_experience_job_job_type_job_location_job_salary_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='job',
-            name='is_featured',
+            model_name="job",
+            name="is_featured",
             field=models.BooleanField(default=False),
         ),
     ]

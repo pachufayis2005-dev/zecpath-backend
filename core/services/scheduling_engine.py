@@ -30,9 +30,7 @@ class SchedulingEngine:
 
         if slot.is_booked:
 
-            raise ValueError(
-                "Slot already booked."
-            )
+            raise ValueError("Slot already booked.")
 
         schedule = InterviewSchedule.objects.create(
             application=application,

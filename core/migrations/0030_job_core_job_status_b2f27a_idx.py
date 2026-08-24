@@ -6,12 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0029_financialauditlog_refundrecord'),
+        ("core", "0029_financialauditlog_refundrecord"),
     ]
 
     operations = [
         migrations.AddIndex(
-            model_name='job',
-            index=models.Index(fields=['status', 'location'], name='core_job_status_b2f27a_idx'),
+            model_name="job",
+            index=models.Index(
+                fields=["status", "location"], name="core_job_status_b2f27a_idx"
+            ),
         ),
     ]

@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0015_emaillog'),
+        ("core", "0015_emaillog"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='emaillog',
-            name='status',
-            field=models.CharField(choices=[('SENT', 'Sent'), ('FAILED', 'Failed')], default='SENT', max_length=20),
+            model_name="emaillog",
+            name="status",
+            field=models.CharField(
+                choices=[("SENT", "Sent"), ("FAILED", "Failed")],
+                default="SENT",
+                max_length=20,
+            ),
         ),
     ]

@@ -7,21 +7,48 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0017_application_core_applic_candida_43c5dc_idx_and_more'),
+        ("core", "0017_application_core_applic_candida_43c5dc_idx_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='InterviewCall',
+            name="InterviewCall",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('scheduled_time', models.DateTimeField(blank=True, null=True)),
-                ('status', models.CharField(choices=[('QUEUED', 'Queued'), ('IN_PROGRESS', 'In Progress'), ('COMPLETED', 'Completed'), ('FAILED', 'Failed')], default='QUEUED', max_length=20)),
-                ('retry_count', models.IntegerField(default=0)),
-                ('notes', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('application', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='interview_call', to='core.application')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("scheduled_time", models.DateTimeField(blank=True, null=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("QUEUED", "Queued"),
+                            ("IN_PROGRESS", "In Progress"),
+                            ("COMPLETED", "Completed"),
+                            ("FAILED", "Failed"),
+                        ],
+                        default="QUEUED",
+                        max_length=20,
+                    ),
+                ),
+                ("retry_count", models.IntegerField(default=0)),
+                ("notes", models.TextField(blank=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "application",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="interview_call",
+                        to="core.application",
+                    ),
+                ),
             ],
         ),
     ]

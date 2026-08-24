@@ -1,7 +1,4 @@
-from core.models import (
-    Application,
-    AIAnswer,
-)
+from core.models import AIAnswer
 
 
 class CandidateReportService:

@@ -1,63 +1,43 @@
 from rest_framework import serializers
+
 from .models import Candidate, Employer
 
 
-class CandidateProfileSerializer(
-    serializers.ModelSerializer
-):
+class CandidateProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Candidate
-        fields = '__all__'
+        fields = "__all__"
 
     def validate_resume(self, value):
 
         if not value:
             return value
 
-        allowed_extensions = [
-            '.pdf',
-            '.doc',
-            '.docx'
-        ]
+        allowed_extensions = [".pdf", ".doc", ".docx"]
 
         file_name = value.name.lower()
 
-        if not any(
-            file_name.endswith(ext)
-            for ext in allowed_extensions
-        ):
+        if not any(file_name.endswith(ext) for ext in allowed_extensions):
             raise serializers.ValidationError(
                 "Only PDF, DOC and DOCX files are allowed."
             )
 
         if value.size > 5 * 1024 * 1024:
-            raise serializers.ValidationError(
-                "File size cannot exceed 5MB."
-            )
+            raise serializers.ValidationError("File size cannot exceed 5MB.")
 
         return value
 
-    def update(
-        self,
-        instance,
-        validated_data
-    ):
+    def update(self, instance, validated_data):
 
-        new_resume = validated_data.get(
-            'resume'
-        )
+        new_resume = validated_data.get("resume")
 
         if new_resume and instance.resume:
 
-            instance.resume.delete(
-                save=False
-            )
+            instance.resume.delete(save=False)
 
-        return super().update(
-            instance,
-            validated_data
-        )
+        return super().update(instance, validated_data)
+
 
 class EmployerProfileSerializer(serializers.ModelSerializer):
 

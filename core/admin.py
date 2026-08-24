@@ -1,12 +1,12 @@
 from django.contrib import admin
 
 from .models import (
-    User,
-    Employer,
-    Candidate,
-    Job,
     Application,
     AuditTrail,
+    Candidate,
+    Employer,
+    Job,
+    User,
 )
 
 admin.site.register(User)

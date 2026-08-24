@@ -6,38 +6,47 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0004_job_status_alter_job_title'),
+        ("core", "0004_job_status_alter_job_title"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='job',
-            name='experience',
+            model_name="job",
+            name="experience",
             field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AddField(
-            model_name='job',
-            name='job_type',
-            field=models.CharField(choices=[('FULL_TIME', 'Full Time'), ('PART_TIME', 'Part Time'), ('INTERNSHIP', 'Internship'), ('CONTRACT', 'Contract')], default='FULL_TIME', max_length=20),
+            model_name="job",
+            name="job_type",
+            field=models.CharField(
+                choices=[
+                    ("FULL_TIME", "Full Time"),
+                    ("PART_TIME", "Part Time"),
+                    ("INTERNSHIP", "Internship"),
+                    ("CONTRACT", "Contract"),
+                ],
+                default="FULL_TIME",
+                max_length=20,
+            ),
         ),
         migrations.AddField(
-            model_name='job',
-            name='location',
+            model_name="job",
+            name="location",
             field=models.CharField(blank=True, max_length=200),
         ),
         migrations.AddField(
-            model_name='job',
-            name='salary',
+            model_name="job",
+            name="salary",
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='job',
-            name='skills',
+            model_name="job",
+            name="skills",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='job',
-            name='updated_at',
+            model_name="job",
+            name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
     ]

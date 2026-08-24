@@ -6,13 +6,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0013_application_ats_score_delete_atsscore'),
+        ("core", "0013_application_ats_score_delete_atsscore"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='application',
-            name='status',
-            field=models.CharField(choices=[('APPLIED', 'Applied'), ('UNDER_REVIEW', 'Under Review'), ('SHORTLISTED', 'Shortlisted'), ('INTERVIEW_SCHEDULED', 'Interview Scheduled'), ('REJECTED', 'Rejected'), ('SELECTED', 'Selected')], default='APPLIED', max_length=30),
+            model_name="application",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("APPLIED", "Applied"),
+                    ("UNDER_REVIEW", "Under Review"),
+                    ("SHORTLISTED", "Shortlisted"),
+                    ("INTERVIEW_SCHEDULED", "Interview Scheduled"),
+                    ("REJECTED", "Rejected"),
+                    ("SELECTED", "Selected"),
+                ],
+                default="APPLIED",
+                max_length=30,
+            ),
         ),
     ]

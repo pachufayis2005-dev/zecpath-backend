@@ -7,29 +7,77 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0022_aianswer_evaluated_at'),
+        ("core", "0022_aianswer_evaluated_at"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='AvailabilitySlot',
+            name="AvailabilitySlot",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField()),
-                ('start_time', models.TimeField()),
-                ('end_time', models.TimeField()),
-                ('is_booked', models.BooleanField(default=False)),
-                ('employer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='availability_slots', to='core.employer')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateField()),
+                ("start_time", models.TimeField()),
+                ("end_time", models.TimeField()),
+                ("is_booked", models.BooleanField(default=False)),
+                (
+                    "employer",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="availability_slots",
+                        to="core.employer",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='InterviewSchedule',
+            name="InterviewSchedule",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('scheduled_at', models.DateTimeField(auto_now_add=True)),
-                ('status', models.CharField(choices=[('SCHEDULED', 'Scheduled'), ('COMPLETED', 'Completed'), ('CANCELLED', 'Cancelled')], default='SCHEDULED', max_length=20)),
-                ('application', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='schedule', to='core.application')),
-                ('slot', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='interview', to='core.availabilityslot')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("scheduled_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("SCHEDULED", "Scheduled"),
+                            ("COMPLETED", "Completed"),
+                            ("CANCELLED", "Cancelled"),
+                        ],
+                        default="SCHEDULED",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "application",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="schedule",
+                        to="core.application",
+                    ),
+                ),
+                (
+                    "slot",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="interview",
+                        to="core.availabilityslot",
+                    ),
+                ),
             ],
         ),
     ]

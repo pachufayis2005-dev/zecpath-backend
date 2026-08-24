@@ -6,23 +6,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0007_application_resume_snapshot_application_status'),
+        ("core", "0007_application_resume_snapshot_application_status"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='application',
-            name='status_updated_at',
+            model_name="application",
+            name="status_updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AddField(
-            model_name='application',
-            name='updated_at',
+            model_name="application",
+            name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AlterField(
-            model_name='application',
-            name='status',
-            field=models.CharField(choices=[('APPLIED', 'Applied'), ('SHORTLISTED', 'Shortlisted'), ('INTERVIEW_SCHEDULED', 'Interview Scheduled'), ('REJECTED', 'Rejected'), ('SELECTED', 'Selected')], default='APPLIED', max_length=30),
+            model_name="application",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("APPLIED", "Applied"),
+                    ("SHORTLISTED", "Shortlisted"),
+                    ("INTERVIEW_SCHEDULED", "Interview Scheduled"),
+                    ("REJECTED", "Rejected"),
+                    ("SELECTED", "Selected"),
+                ],
+                default="APPLIED",
+                max_length=30,
+            ),
         ),
     ]

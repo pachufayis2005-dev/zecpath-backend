@@ -1,16 +1,16 @@
 from rest_framework import serializers
-from .models import (Job, Application,SavedJob,AuditLog,AvailabilitySlot,InterviewSchedule,)
+
 from .models import (
-    Job,
     Application,
-    SavedJob,
     AuditLog,
     AvailabilitySlot,
-    InterviewSchedule,
-    PaymentTransaction,
     BillingHistory,
-    RefundRecord,
     FinancialAuditLog,
+    InterviewSchedule,
+    Job,
+    PaymentTransaction,
+    RefundRecord,
+    SavedJob,
 )
 
 
@@ -55,6 +55,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
             "applied_at",
         ]
 
+
 class SavedJobSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -65,6 +66,7 @@ class SavedJobSerializer(serializers.ModelSerializer):
             "job",
             "saved_at",
         ]
+
 
 class AuditLogSerializer(serializers.ModelSerializer):
 
@@ -78,8 +80,10 @@ class AuditLogSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+
 class SubmitAnswerSerializer(serializers.Serializer):
     answer = serializers.CharField()
+
 
 class AvailabilitySlotSerializer(serializers.ModelSerializer):
 
@@ -97,6 +101,7 @@ class InterviewScheduleSerializer(serializers.ModelSerializer):
         model = InterviewSchedule
 
         fields = "__all__"
+
 
 class PaymentTransactionSerializer(serializers.ModelSerializer):
 

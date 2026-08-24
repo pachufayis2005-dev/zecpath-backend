@@ -7,35 +7,106 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0028_paymenttransaction_razorpay_order_id_and_more'),
+        ("core", "0028_paymenttransaction_razorpay_order_id_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='FinancialAuditLog',
+            name="FinancialAuditLog",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('action', models.CharField(choices=[('PAYMENT_SUCCESS', 'Payment Success'), ('PAYMENT_FAILED', 'Payment Failed'), ('REFUND_CREATED', 'Refund Created'), ('REFUND_FAILED', 'Refund Failed'), ('SUSPICIOUS_TRANSACTION', 'Suspicious Transaction')], max_length=50)),
-                ('message', models.TextField()),
-                ('ip_address', models.GenericIPAddressField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('employer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='financial_audit_logs', to='core.employer')),
-                ('transaction', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='financial_audit_logs', to='core.paymenttransaction')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "action",
+                    models.CharField(
+                        choices=[
+                            ("PAYMENT_SUCCESS", "Payment Success"),
+                            ("PAYMENT_FAILED", "Payment Failed"),
+                            ("REFUND_CREATED", "Refund Created"),
+                            ("REFUND_FAILED", "Refund Failed"),
+                            ("SUSPICIOUS_TRANSACTION", "Suspicious Transaction"),
+                        ],
+                        max_length=50,
+                    ),
+                ),
+                ("message", models.TextField()),
+                ("ip_address", models.GenericIPAddressField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "employer",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="financial_audit_logs",
+                        to="core.employer",
+                    ),
+                ),
+                (
+                    "transaction",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="financial_audit_logs",
+                        to="core.paymenttransaction",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='RefundRecord',
+            name="RefundRecord",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('refund_id', models.CharField(max_length=200, unique=True)),
-                ('amount', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('currency', models.CharField(default='INR', max_length=10)),
-                ('reason', models.CharField(blank=True, max_length=255)),
-                ('status', models.CharField(choices=[('PENDING', 'Pending'), ('PROCESSED', 'Processed'), ('FAILED', 'Failed')], default='PENDING', max_length=20)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('processed_at', models.DateTimeField(blank=True, null=True)),
-                ('employer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='refunds', to='core.employer')),
-                ('transaction', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='refunds', to='core.paymenttransaction')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("refund_id", models.CharField(max_length=200, unique=True)),
+                ("amount", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("currency", models.CharField(default="INR", max_length=10)),
+                ("reason", models.CharField(blank=True, max_length=255)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("PENDING", "Pending"),
+                            ("PROCESSED", "Processed"),
+                            ("FAILED", "Failed"),
+                        ],
+                        default="PENDING",
+                        max_length=20,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("processed_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "employer",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="refunds",
+                        to="core.employer",
+                    ),
+                ),
+                (
+                    "transaction",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="refunds",
+                        to="core.paymenttransaction",
+                    ),
+                ),
             ],
         ),
     ]

@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission
+
 from core.services import LoggingService
 
 
@@ -6,6 +7,7 @@ class IsAdmin(BasePermission):
 
     def has_permission(self, request, view):
         return request.user.role == "ADMIN"
+
 
 class IsEmployer(BasePermission):
 
@@ -22,6 +24,7 @@ class IsEmployer(BasePermission):
             return False
 
         return True
+
 
 class IsCandidate(BasePermission):
 

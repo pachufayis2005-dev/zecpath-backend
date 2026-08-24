@@ -6,23 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0027_subscriptionplan_usersubscription_paymenttransaction_and_more'),
+        ("core", "0027_subscriptionplan_usersubscription_paymenttransaction_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='paymenttransaction',
-            name='razorpay_order_id',
+            model_name="paymenttransaction",
+            name="razorpay_order_id",
             field=models.CharField(blank=True, max_length=200, null=True, unique=True),
         ),
         migrations.AddField(
-            model_name='paymenttransaction',
-            name='razorpay_payment_id',
+            model_name="paymenttransaction",
+            name="razorpay_payment_id",
             field=models.CharField(blank=True, max_length=200, null=True, unique=True),
         ),
         migrations.AddField(
-            model_name='paymenttransaction',
-            name='razorpay_signature',
+            model_name="paymenttransaction",
+            name="razorpay_signature",
             field=models.CharField(blank=True, max_length=500),
         ),
     ]

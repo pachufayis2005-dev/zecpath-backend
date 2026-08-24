@@ -1,12 +1,13 @@
 import os
 import re
+
 import pdfplumber
 from docx import Document
-
 
 # -----------------------------
 # Resume Text Extraction
 # -----------------------------
+
 
 def extract_resume_text(file):
 
@@ -39,6 +40,7 @@ def extract_resume_text(file):
 # Clean Text
 # -----------------------------
 
+
 def clean_text(text):
 
     text = text.replace("\n", " ")
@@ -52,7 +54,6 @@ def clean_text(text):
 # -----------------------------
 
 SKILLS = [
-
     "python",
     "django",
     "rest api",
@@ -79,6 +80,7 @@ SKILLS = [
 # Extract Skills
 # -----------------------------
 
+
 def extract_skills(text):
 
     found = []
@@ -97,6 +99,7 @@ def extract_skills(text):
 # Experience Extraction
 # -----------------------------
 
+
 def extract_experience(text):
 
     match = re.search(r"(\d+)\+?\s*years?", text.lower())
@@ -111,10 +114,10 @@ def extract_experience(text):
 # Education Extraction
 # -----------------------------
 
+
 def extract_education(text):
 
     education_keywords = [
-
         "bca",
         "b.tech",
         "mca",
@@ -122,7 +125,6 @@ def extract_education(text):
         "msc",
         "computer science",
         "engineering",
-
     ]
 
     text_lower = text.lower()
@@ -136,9 +138,11 @@ def extract_education(text):
 
     return found
 
+
 # -----------------------------
 # ATS Score Calculation
 # -----------------------------
+
 
 def calculate_ats_score(job, parsed_resume):
 
@@ -150,17 +154,13 @@ def calculate_ats_score(job, parsed_resume):
     # Skills (60%)
     # -----------------------------
 
-    import re  # add this at the top of the file if not already there
-
     job_skills = [
-    skill.strip().lower()
-    for skill in re.split(r"[,\n]+", job.skills)
-    if skill.strip()
+        skill.strip().lower()
+        for skill in re.split(r"[,\n]+", job.skills)
+        if skill.strip()
     ]
-    resume_skills = [
-        skill.lower()
-        for skill in parsed_resume["skills"]
-    ]
+
+    resume_skills = [skill.lower() for skill in parsed_resume["skills"]]
 
     for skill in job_skills:
 
@@ -170,11 +170,7 @@ def calculate_ats_score(job, parsed_resume):
 
     if job_skills:
 
-        skill_score = (
-            len(matched_skills)
-            /
-            len(job_skills)
-        ) * 60
+        skill_score = (len(matched_skills) / len(job_skills)) * 60
 
     else:
 
@@ -186,13 +182,9 @@ def calculate_ats_score(job, parsed_resume):
     # Experience (30%)
     # -----------------------------
 
-    job_exp = "".join(
-        filter(str.isdigit, job.experience)
-    )
+    job_exp = "".join(filter(str.isdigit, job.experience))
 
-    resume_exp = "".join(
-        filter(str.isdigit, parsed_resume["experience"])
-    )
+    resume_exp = "".join(filter(str.isdigit, parsed_resume["experience"]))
 
     if job_exp and resume_exp:
 
@@ -208,10 +200,4 @@ def calculate_ats_score(job, parsed_resume):
 
         score += 10
 
-    return {
-
-        "score": round(score, 2),
-
-        "matched_skills": matched_skills
-
-    }
+    return {"score": round(score, 2), "matched_skills": matched_skills}

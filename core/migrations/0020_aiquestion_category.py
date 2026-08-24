@@ -6,14 +6,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0019_aiinterviewsession_aiquestion_aianswer_calllog'),
+        ("core", "0019_aiinterviewsession_aiquestion_aianswer_calllog"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='aiquestion',
-            name='category',
-            field=models.CharField(choices=[('INTRODUCTION', 'Introduction'), ('EXPERIENCE', 'Experience'), ('SKILLS', 'Skills'), ('AVAILABILITY', 'Availability'), ('SALARY', 'Salary')], default='INTRODUCTION', max_length=30),
+            model_name="aiquestion",
+            name="category",
+            field=models.CharField(
+                choices=[
+                    ("INTRODUCTION", "Introduction"),
+                    ("EXPERIENCE", "Experience"),
+                    ("SKILLS", "Skills"),
+                    ("AVAILABILITY", "Availability"),
+                    ("SALARY", "Salary"),
+                ],
+                default="INTRODUCTION",
+                max_length=30,
+            ),
             preserve_default=False,
         ),
     ]

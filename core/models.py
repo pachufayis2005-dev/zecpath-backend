@@ -1,5 +1,6 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
+
 
 class User(AbstractUser):
 
@@ -13,31 +14,17 @@ class User(AbstractUser):
         (CANDIDATE, "Candidate"),
     ]
 
-    email = models.EmailField(
-        unique=True
-    )
+    email = models.EmailField(unique=True)
 
-    phone = models.CharField(
-        max_length=20,
-        blank=True
-    )
+    phone = models.CharField(max_length=20, blank=True)
 
-    role = models.CharField(
-        max_length=20,
-        choices=ROLE_CHOICES
-    )
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
 
-    is_verified = models.BooleanField(
-        default=False
-    )
+    is_verified = models.BooleanField(default=False)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.username
@@ -45,75 +32,44 @@ class User(AbstractUser):
 
 class Employer(models.Model):
 
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE
-    )
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-    company_name = models.CharField(
-        max_length=200
-    )
+    company_name = models.CharField(max_length=200)
 
-    domain = models.CharField(
-        max_length=200,
-        blank=True
-    )
+    domain = models.CharField(max_length=200, blank=True)
 
-    company_size = models.IntegerField(
-        default=0
-    )
+    company_size = models.IntegerField(default=0)
 
-    is_verified = models.BooleanField(
-        default=False
-    )
+    is_verified = models.BooleanField(default=False)
 
-    is_active = models.BooleanField(
-        default=True
-    )
+    is_active = models.BooleanField(default=True)
 
-    is_approved = models.BooleanField(
-    default=False
-    )
+    is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return self.company_name
 
+
 class Candidate(models.Model):
 
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE
-    )
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     skills = models.TextField()
 
-    education = models.CharField(
-        max_length=200,
-        blank=True
-    )
+    education = models.CharField(max_length=200, blank=True)
 
-    experience = models.CharField(
-        max_length=200,
-        blank=True
-    )
+    experience = models.CharField(max_length=200, blank=True)
 
-    expected_salary = models.IntegerField(
-        default=0
-    )
+    expected_salary = models.IntegerField(default=0)
 
-    resume = models.FileField(
-        upload_to='resumes/',
-        blank=True,
-        null=True
-    )
+    resume = models.FileField(upload_to="resumes/", blank=True, null=True)
 
-    is_active = models.BooleanField(
-        default=True
-    )
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.user.username
-    
+
+
 class Job(models.Model):
 
     ACTIVE = "ACTIVE"
@@ -136,66 +92,35 @@ class Job(models.Model):
         (CONTRACT, "Contract"),
     ]
 
-    employer = models.ForeignKey(
-        Employer,
-        on_delete=models.CASCADE
-    )
+    employer = models.ForeignKey(Employer, on_delete=models.CASCADE)
 
-    title = models.CharField(
-        max_length=200,
-        db_index=True
-    )
+    title = models.CharField(max_length=200, db_index=True)
 
     description = models.TextField()
 
-    skills = models.TextField(
-        blank=True
-    )
+    skills = models.TextField(blank=True)
 
-    experience = models.CharField(
-        max_length=100,
-        blank=True
-    )
+    experience = models.CharField(max_length=100, blank=True)
 
-    salary = models.IntegerField(
-        default=0
-    )
+    salary = models.IntegerField(default=0)
 
-    location = models.CharField(
-        max_length=200,
-        blank=True
-    )
+    location = models.CharField(max_length=200, blank=True)
 
     job_type = models.CharField(
-        max_length=20,
-        choices=JOB_TYPE_CHOICES,
-        default=FULL_TIME
+        max_length=20, choices=JOB_TYPE_CHOICES, default=FULL_TIME
     )
 
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=ACTIVE)
 
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default=ACTIVE
-    )
+    is_featured = models.BooleanField(default=False)
 
-    is_featured = models.BooleanField(
-        default=False
-    )
-    
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
 
         indexes = [
-
             models.Index(fields=["status"]),
             models.Index(fields=["location"]),
             models.Index(fields=["job_type"]),
@@ -204,6 +129,7 @@ class Job(models.Model):
 
     def __str__(self):
         return self.title
+
 
 class Application(models.Model):
 
@@ -215,67 +141,44 @@ class Application(models.Model):
     SELECTED = "SELECTED"
 
     STATUS_CHOICES = [
-    (APPLIED, "Applied"),
-    (UNDER_REVIEW, "Under Review"),
-    (SHORTLISTED, "Shortlisted"),
-    (INTERVIEW_SCHEDULED, "Interview Scheduled"),
-    (REJECTED, "Rejected"),
-    (SELECTED, "Selected"),
-]
-    candidate = models.ForeignKey(
-        Candidate,
-        on_delete=models.CASCADE
-    )
+        (APPLIED, "Applied"),
+        (UNDER_REVIEW, "Under Review"),
+        (SHORTLISTED, "Shortlisted"),
+        (INTERVIEW_SCHEDULED, "Interview Scheduled"),
+        (REJECTED, "Rejected"),
+        (SELECTED, "Selected"),
+    ]
+    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
 
-    job = models.ForeignKey(
-        Job,
-        on_delete=models.CASCADE
-    )
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
 
-    resume_snapshot = models.TextField(
-        blank=True
-    )
+    resume_snapshot = models.TextField(blank=True)
 
-    status = models.CharField(
-        max_length=30,
-        choices=STATUS_CHOICES,
-        default=APPLIED
-    )
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default=APPLIED)
 
     ats_score = models.FloatField(
-    default=0,
-    null=True,
-    blank=True,
-)
-
-    applied_at = models.DateTimeField(
-        auto_now_add=True
+        default=0,
+        null=True,
+        blank=True,
     )
 
-    updated_at = models.DateTimeField(
-    auto_now=True
-    )
+    applied_at = models.DateTimeField(auto_now_add=True)
 
-    status_updated_at = models.DateTimeField(
-    auto_now=True
-    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    status_updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
 
         indexes = [
-
             models.Index(fields=["candidate"]),
             models.Index(fields=["job"]),
             models.Index(fields=["status"]),
-
         ]
 
     def __str__(self):
-        return (
-            f"{self.candidate.user.username}"
-            f" -> "
-            f"{self.job.title}"
-        )
+        return f"{self.candidate.user.username}" f" -> " f"{self.job.title}"
+
 
 class InterviewCall(models.Model):
 
@@ -327,6 +230,7 @@ class InterviewCall(models.Model):
     def __str__(self):
         return f"{self.application} - {self.status}"
 
+
 class AIInterviewSession(models.Model):
 
     STARTED = "STARTED"
@@ -342,9 +246,7 @@ class AIInterviewSession(models.Model):
         on_delete=models.CASCADE,
     )
 
-    started_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    started_at = models.DateTimeField(auto_now_add=True)
 
     completed_at = models.DateTimeField(
         null=True,
@@ -359,6 +261,7 @@ class AIInterviewSession(models.Model):
 
     def __str__(self):
         return f"Session {self.id}"
+
 
 class AIQuestion(models.Model):
 
@@ -395,6 +298,7 @@ class AIQuestion(models.Model):
 
     def __str__(self):
         return f"{self.category} - {self.question[:40]}"
+
 
 class AIAnswer(models.Model):
 
@@ -445,6 +349,7 @@ class AIAnswer(models.Model):
     def __str__(self):
         return self.answer[:40]
 
+
 class CallLog(models.Model):
 
     session = models.ForeignKey(
@@ -468,54 +373,36 @@ class CallLog(models.Model):
     def __str__(self):
         return self.action
 
+
 class SavedJob(models.Model):
 
-    candidate = models.ForeignKey(
-        Candidate,
-        on_delete=models.CASCADE
-    )
+    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
 
-    job = models.ForeignKey(
-        Job,
-        on_delete=models.CASCADE
-    )
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
 
-    saved_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    saved_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return (
-            f"{self.candidate.user.username}"
-            f" saved "
-            f"{self.job.title}"
-        )
+        return f"{self.candidate.user.username}" f" saved " f"{self.job.title}"
+
 
 class AuditLog(models.Model):
 
-    admin = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE
-    )
+    admin = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    action = models.CharField(
-        max_length=255
-    )
+    action = models.CharField(max_length=255)
 
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.action
+
 
 class EmailLog(models.Model):
 
     recipient = models.EmailField()
 
-    subject = models.CharField(
-        max_length=255
-    )
+    subject = models.CharField(max_length=255)
 
     message = models.TextField()
 
@@ -523,22 +410,17 @@ class EmailLog(models.Model):
     FAILED = "FAILED"
 
     STATUS_CHOICES = [
-    (SENT, "Sent"),
-    (FAILED, "Failed"),
+        (SENT, "Sent"),
+        (FAILED, "Failed"),
     ]
 
-    status = models.CharField(
-    max_length=20,
-    choices=STATUS_CHOICES,
-    default=SENT
-    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=SENT)
 
-    sent_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    sent_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.subject
+
 
 class AvailabilitySlot(models.Model):
 
@@ -554,17 +436,11 @@ class AvailabilitySlot(models.Model):
 
     end_time = models.TimeField()
 
-    is_booked = models.BooleanField(
-        default=False
-    )
+    is_booked = models.BooleanField(default=False)
 
     def __str__(self):
 
-        return (
-            f"{self.employer.user.username} "
-            f"{self.date} "
-            f"{self.start_time}"
-        )
+        return f"{self.employer.user.username} " f"{self.date} " f"{self.start_time}"
 
 
 class InterviewSchedule(models.Model):
@@ -574,50 +450,35 @@ class InterviewSchedule(models.Model):
     CANCELLED = "CANCELLED"
 
     STATUS_CHOICES = [
-
         (SCHEDULED, "Scheduled"),
         (COMPLETED, "Completed"),
         (CANCELLED, "Cancelled"),
     ]
 
     application = models.OneToOneField(
-
         Application,
-
         on_delete=models.CASCADE,
-
         related_name="schedule",
     )
 
     slot = models.OneToOneField(
-
         AvailabilitySlot,
-
         on_delete=models.CASCADE,
-
         related_name="interview",
     )
 
-    scheduled_at = models.DateTimeField(
-
-        auto_now_add=True
-    )
+    scheduled_at = models.DateTimeField(auto_now_add=True)
 
     status = models.CharField(
-
         max_length=20,
-
         choices=STATUS_CHOICES,
-
         default=SCHEDULED,
     )
 
     def __str__(self):
 
-        return (
-            f"{self.application.id} - "
-            f"{self.status}"
-        )
+        return f"{self.application.id} - " f"{self.status}"
+
 
 class ReminderLog(models.Model):
 
@@ -656,10 +517,8 @@ class ReminderLog(models.Model):
     )
 
     def __str__(self):
-        return (
-            f"{self.interview.id} - "
-            f"{self.reminder_type}"
-        )
+        return f"{self.interview.id} - " f"{self.reminder_type}"
+
 
 class ApplicationLog(models.Model):
 
@@ -688,6 +547,7 @@ class ApplicationLog(models.Model):
     def __str__(self):
         return f"{self.level} - {self.created_at}"
 
+
 class SecurityLog(models.Model):
 
     user = models.ForeignKey(
@@ -713,6 +573,7 @@ class SecurityLog(models.Model):
     def __str__(self):
         return self.action
 
+
 class AIEventLog(models.Model):
 
     interview = models.ForeignKey(
@@ -730,6 +591,7 @@ class AIEventLog(models.Model):
 
     def __str__(self):
         return self.event
+
 
 class AuditTrail(models.Model):
     """
@@ -759,6 +621,7 @@ class AuditTrail(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.action}"
+
 
 class SubscriptionPlan(models.Model):
 
@@ -895,9 +758,7 @@ class UserSubscription(models.Model):
 
     def __str__(self):
         return (
-            f"{self.employer.company_name} - "
-            f"{self.plan.name} - "
-            f"{self.status}"
+            f"{self.employer.company_name} - " f"{self.plan.name} - " f"{self.status}"
         )
 
 
@@ -985,6 +846,7 @@ class PaymentTransaction(models.Model):
 
     def __str__(self):
         return self.transaction_id
+
 
 class BillingHistory(models.Model):
 
@@ -1123,6 +985,7 @@ class RefundRecord(models.Model):
     def __str__(self):
         return self.refund_id
 
+
 class FinancialAuditLog(models.Model):
 
     PAYMENT_SUCCESS = "PAYMENT_SUCCESS"
@@ -1173,4 +1036,3 @@ class FinancialAuditLog(models.Model):
 
     def __str__(self):
         return f"{self.action} - {self.created_at}"
-    

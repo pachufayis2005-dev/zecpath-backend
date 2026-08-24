@@ -1,11 +1,9 @@
 from django.utils import timezone
-from datetime import timedelta
 
 from core.models import (
     InterviewSchedule,
     ReminderLog,
 )
-
 from core.services_py import (
     interview_day_before_template,
     interview_hour_before_template,
@@ -16,11 +14,7 @@ class ReminderService:
 
     def get_upcoming_interviews(self):
 
-        now = timezone.now()
-
-        return InterviewSchedule.objects.filter(
-            status=InterviewSchedule.SCHEDULED
-        )
+        return InterviewSchedule.objects.filter(status=InterviewSchedule.SCHEDULED)
 
     def send_reminder(
         self,

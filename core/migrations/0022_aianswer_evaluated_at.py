@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0021_aianswer_ai_feedback_aianswer_completeness_score_and_more'),
+        ("core", "0021_aianswer_ai_feedback_aianswer_completeness_score_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='aianswer',
-            name='evaluated_at',
+            model_name="aianswer",
+            name="evaluated_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

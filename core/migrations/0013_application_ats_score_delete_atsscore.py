@@ -6,16 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0012_atsscore'),
+        ("core", "0012_atsscore"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='application',
-            name='ats_score',
+            model_name="application",
+            name="ats_score",
             field=models.FloatField(blank=True, default=0, null=True),
         ),
         migrations.DeleteModel(
-            name='ATSScore',
+            name="ATSScore",
         ),
     ]

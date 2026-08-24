@@ -1,14 +1,12 @@
 from datetime import timedelta
 
-from django.db import models, transaction
 from django.utils import timezone
 
 from core.models import (
-    UserSubscription,
-    Job,
     InterviewCall,
+    Job,
+    UserSubscription,
 )
-
 
 GRACE_PERIOD_DAYS = 3
 
@@ -27,8 +25,7 @@ def get_active_subscription(employer):
     now = timezone.now()
 
     subscription = (
-        UserSubscription.objects
-        .filter(
+        UserSubscription.objects.filter(
             employer=employer,
             status=UserSubscription.ACTIVE,
             plan__is_active=True,
@@ -51,10 +48,7 @@ def get_active_subscription(employer):
 
     # Subscription has expired.
     # Give the employer a 3-day grace period.
-    grace_period_end = (
-        subscription.expires_at +
-        timedelta(days=GRACE_PERIOD_DAYS)
-    )
+    grace_period_end = subscription.expires_at + timedelta(days=GRACE_PERIOD_DAYS)
 
     # Still inside grace period.
     if now < grace_period_end:
@@ -84,9 +78,7 @@ def can_post_job(employer):
     if limit == 0:
         return True
 
-    current_job_count = Job.objects.filter(
-        employer=employer
-    ).count()
+    current_job_count = Job.objects.filter(employer=employer).count()
 
     return current_job_count < limit
 
