@@ -24,6 +24,7 @@ from ..throttles import LoginRateThrottle
 class LoginAPIView(TokenObtainPairView):
     """Authenticate a user and return JWT access + refresh tokens."""
 
+    permission_classes = [AllowAny]
     throttle_classes = [LoginRateThrottle]
 
 
