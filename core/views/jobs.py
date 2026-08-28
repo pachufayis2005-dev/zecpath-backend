@@ -4,7 +4,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -22,6 +22,8 @@ from .helpers import validate_job_owner
 )
 class JobListAPIView(APIView):
     """Get a list of all active jobs."""
+
+    permission_classes = [AllowAny]
 
     def get(self, request):
 
@@ -95,6 +97,8 @@ class JobCreateAPIView(APIView):
 
 class FeaturedJobAPIView(APIView):
 
+    permission_classes = [AllowAny]
+
     def get(self, request):
 
         jobs = Job.objects.filter(status=Job.ACTIVE, is_featured=True).order_by(
@@ -107,6 +111,8 @@ class FeaturedJobAPIView(APIView):
 
 
 class LatestJobAPIView(APIView):
+
+    permission_classes = [AllowAny]
 
     @method_decorator(cache_page(60 * 5))
     def get(self, request):
