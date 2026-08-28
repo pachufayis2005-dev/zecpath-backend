@@ -196,6 +196,20 @@ class ApplicationStatusUpdateAPIView(APIView):
         application.status = new_status
         application.save()
 
+        if new_status == Application.SHORTLISTED:
+            subject, message = shortlisted_template(
+                application.candidate.user.username,
+                application.job.title,
+            )
+            send_email_task.delay(application.candidate.user.email, subject, message)
+
+        elif new_status == Application.REJECTED:
+            subject, message = rejected_template(
+                application.candidate.user.username,
+                application.job.title,
+            )
+            send_email_task.delay(application.candidate.user.email, subject, message)
+
         return Response(
             {"message": "Application status updated", "status": application.status}
         )
