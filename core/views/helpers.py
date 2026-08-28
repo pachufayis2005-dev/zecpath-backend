@@ -14,7 +14,9 @@ def build_parsed_resume_from_candidate(candidate):
             if skill.strip()
         ],
         "experience": candidate.experience or "",
-        "education": [],
+        "education": (
+            [candidate.education.strip()] if candidate.education else []
+        ),
     }
 
 
