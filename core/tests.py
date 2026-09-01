@@ -312,3 +312,91 @@ class PaymentAPITest(APITestCase):
         })
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+class IntegrationAPITest(APITestCase):
+
+    def setUp(self):
+        cache.clear()
+
+    def test_signup_with_missing_fields_returns_400_not_500(self):
+        response = self.client.post("/api/signup/", {
+            "username": "incomplete_user",
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_signup_with_invalid_role_returns_400(self):
+        response = self.client.post("/api/signup/", {
+            "username": "bad_role_user",
+            "email": "badrole@example.com",
+            "phone": "9999999993",
+            "role": "SUPERADMIN",
+            "password": "StrongPass123",
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_job_create_with_missing_fields_returns_400_not_500(self):
+        self.client.post("/api/signup/", {
+            "username": "qa_employer4",
+            "email": "qa_employer4@example.com",
+            "phone": "9999999992",
+            "role": "EMPLOYER",
+            "password": "StrongPass123",
+        })
+        login = self.client.post("/api/login/", {
+            "username": "qa_employer4",
+            "password": "StrongPass123",
+        })
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+
+        response = self.client.post("/api/jobs/create/", {
+            "title": "Incomplete Job",
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_protected_endpoint_with_invalid_token_returns_401(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer totally.invalid.token")
+
+        response = self.client.get("/api/users/test/")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_protected_endpoint_with_no_token_returns_401(self):
+        response = self.client.get("/api/users/test/")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    @patch("core.services.payment_service.razorpay.Client")
+    def test_payment_order_creation_handles_razorpay_failure_gracefully(
+        self, mock_razorpay_client
+    ):
+        mock_razorpay_client.return_value.order.create.side_effect = Exception(
+            "Razorpay service unavailable"
+        )
+
+        self.client.post("/api/signup/", {
+            "username": "qa_employer5",
+            "email": "qa_employer5@example.com",
+            "phone": "9999999991",
+            "role": "EMPLOYER",
+            "password": "StrongPass123",
+        })
+        login = self.client.post("/api/login/", {
+            "username": "qa_employer5",
+            "password": "StrongPass123",
+        })
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+
+        response = self.client.post("/api/payments/create-order/", {
+            "amount": 999,
+            "currency": "INR",
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_502_BAD_GATEWAY)
+
+    def test_job_list_is_public_no_auth_required(self):
+        response = self.client.get("/api/jobs/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
