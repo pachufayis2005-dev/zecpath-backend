@@ -4,6 +4,10 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from unittest.mock import patch
 from core.models import Application, Job
+import hmac
+import hashlib
+from django.conf import settings
+from core.models import PaymentTransaction
 
 
 
@@ -206,3 +210,94 @@ class AIInterviewAPITest(APITestCase):
 
         self.assertEqual(answer_response.status_code, status.HTTP_200_OK)
         self.assertIn("score", answer_response.data)
+
+
+
+
+class PaymentAPITest(APITestCase):
+
+    def _create_employer(self):
+        self.client.post("/api/signup/", {
+            "username": "qa_employer3",
+            "email": "qa_employer3@example.com",
+            "phone": "9999999994",
+            "role": "EMPLOYER",
+            "password": "StrongPass123",
+        })
+        login = self.client.post("/api/login/", {
+            "username": "qa_employer3",
+            "password": "StrongPass123",
+        })
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+
+    @patch("core.services.payment_service.razorpay.Client")
+    def test_create_payment_order(self, mock_razorpay_client):
+        mock_razorpay_client.return_value.order.create.return_value = {
+            "id": "order_test123"
+        }
+
+        self._create_employer()
+
+        response = self.client.post("/api/payments/create-order/", {
+            "amount": 999,
+            "currency": "INR",
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["razorpay_order_id"], "order_test123")
+        self.assertTrue(
+            PaymentTransaction.objects.filter(
+                razorpay_order_id="order_test123"
+            ).exists()
+        )
+
+    def test_verify_payment_with_valid_signature(self):
+        self._create_employer()
+
+        employer = self.client.get("/api/employer/profile/").wsgi_request.user.employer
+
+        transaction = PaymentTransaction.objects.create(
+            employer=employer,
+            amount=999,
+            currency="INR",
+            transaction_id="order_test456",
+            razorpay_order_id="order_test456",
+            status=PaymentTransaction.PENDING,
+        )
+
+        razorpay_payment_id = "pay_test456"
+        generated_signature = hmac.new(
+            settings.RAZORPAY_KEY_SECRET.encode(),
+            f"{transaction.razorpay_order_id}|{razorpay_payment_id}".encode(),
+            hashlib.sha256,
+        ).hexdigest()
+
+        response = self.client.post("/api/payments/verify/", {
+            "razorpay_order_id": transaction.razorpay_order_id,
+            "razorpay_payment_id": razorpay_payment_id,
+            "razorpay_signature": generated_signature,
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_verify_payment_with_invalid_signature(self):
+        self._create_employer()
+
+        employer = self.client.get("/api/employer/profile/").wsgi_request.user.employer
+
+        transaction = PaymentTransaction.objects.create(
+            employer=employer,
+            amount=999,
+            currency="INR",
+            transaction_id="order_test789",
+            razorpay_order_id="order_test789",
+            status=PaymentTransaction.PENDING,
+        )
+
+        response = self.client.post("/api/payments/verify/", {
+            "razorpay_order_id": transaction.razorpay_order_id,
+            "razorpay_payment_id": "pay_test789",
+            "razorpay_signature": "totally_wrong_signature",
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
