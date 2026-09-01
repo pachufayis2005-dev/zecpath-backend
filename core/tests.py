@@ -8,6 +8,7 @@ import hmac
 import hashlib
 from django.conf import settings
 from core.models import PaymentTransaction
+from django.core.cache import cache
 
 
 
@@ -68,6 +69,9 @@ class SignupAPITest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 class JobPostingAPITest(APITestCase):
+
+    def setUp(self):
+        cache.clear()
 
     def test_employer_can_post_job(self):
         signup_response = self.client.post("/api/signup/", {
@@ -136,6 +140,9 @@ class JobPostingAPITest(APITestCase):
 
 
 class AIInterviewAPITest(APITestCase):
+
+    def setUp(self):
+        cache.clear()
 
     def _create_employer_and_job(self):
         self.client.post("/api/signup/", {
@@ -215,6 +222,10 @@ class AIInterviewAPITest(APITestCase):
 
 
 class PaymentAPITest(APITestCase):
+
+    def setUp(self):
+        cache.clear()
+
 
     def _create_employer(self):
         self.client.post("/api/signup/", {
