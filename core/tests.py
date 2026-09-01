@@ -193,10 +193,10 @@ class AIInterviewAPITest(APITestCase):
         self.assertTrue(hasattr(application, "interview_call"))
 
         interview_call = application.interview_call
-        session = interview_call.aiinterviewsession_set.first()
+        session = interview_call.aiinterviewsession
         self.assertIsNotNone(session)
 
-        first_question = session.aiquestion_set.first()
+        first_question = session.questions.first()
         self.assertIsNotNone(first_question)
 
         answer_response = self.client.post(
