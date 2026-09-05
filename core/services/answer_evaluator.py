@@ -14,6 +14,8 @@ class AnswerEvaluator:
 
     def evaluate(self, ai_answer):
 
+         raise Exception("Simulated AI engine failure")  # TEMPORARY - incident drill
+
         answer = ai_answer.answer
 
         job_title = ai_answer.question.session.interview_call.application.job.title
