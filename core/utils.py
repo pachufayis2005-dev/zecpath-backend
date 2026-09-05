@@ -140,6 +140,18 @@ def extract_education(text):
 
 
 # -----------------------------
+# Helper: extract first number from a string
+# -----------------------------
+
+
+def _first_number(text):
+
+    match = re.search(r"\d+", text or "")
+
+    return match.group(0) if match else ""
+
+
+# -----------------------------
 # ATS Score Calculation
 # -----------------------------
 
@@ -182,9 +194,9 @@ def calculate_ats_score(job, parsed_resume):
     # Experience (30%)
     # -----------------------------
 
-    job_exp = "".join(filter(str.isdigit, job.experience))
+    job_exp = _first_number(job.experience)
 
-    resume_exp = "".join(filter(str.isdigit, parsed_resume["experience"]))
+    resume_exp = _first_number(parsed_resume["experience"])
 
     if job_exp and resume_exp:
 

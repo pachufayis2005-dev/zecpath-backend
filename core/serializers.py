@@ -40,6 +40,11 @@ class JobSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
+    def validate_salary(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Salary cannot be negative.")
+        return value
+
 
 class ApplicationSerializer(serializers.ModelSerializer):
 

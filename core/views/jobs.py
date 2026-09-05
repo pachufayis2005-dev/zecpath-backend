@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
@@ -47,7 +49,13 @@ class JobListAPIView(APIView):
 
         salary = request.GET.get("salary")
         if salary:
-            jobs = jobs.filter(salary__gte=salary)
+            if salary.lstrip("-").isdigit():
+                jobs = jobs.filter(salary__gte=salary)
+            else:
+                return Response(
+                    {"error": "salary must be a number"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         location = request.GET.get("location")
         if location:
@@ -63,6 +71,13 @@ class JobListAPIView(APIView):
 
         date_filter = request.GET.get("date")
         if date_filter:
+            try:
+                datetime.strptime(date_filter, "%Y-%m-%d")
+            except ValueError:
+                return Response(
+                    {"error": "date must be in YYYY-MM-DD format"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             jobs = jobs.filter(created_at__date=date_filter)
 
         paginator = JobPagination()
