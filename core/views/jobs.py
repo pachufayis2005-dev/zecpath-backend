@@ -29,7 +29,7 @@ class JobListAPIView(APIView):
 
     def get(self, request):
 
-        jobs = Job.objects.select_related("employer").all()
+        jobs = Job.objects.select_related("employer").all().order_by("-created_at")
 
         search = request.GET.get("search")
         if search:
