@@ -116,6 +116,8 @@ class FeaturedJobAPIView(APIView):
 
     def get(self, request):
 
+        x = 1 / 0  # TEMPORARY - rollback drill
+
 
         jobs = Job.objects.filter(status=Job.ACTIVE, is_featured=True).order_by(
             "-created_at"
