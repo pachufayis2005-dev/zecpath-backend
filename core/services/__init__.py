@@ -1,4 +1,4 @@
-from ..services_py import *  # noqa: F401,F403
+from .application_service import *  # noqa: F401,F403
 from .access_validation import AccessValidationService  # noqa: F401
 from .ai_bridge import AIBridgeService  # noqa: F401
 from .analytics_service import AnalyticsService  # noqa: F401

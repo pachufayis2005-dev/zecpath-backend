@@ -3,7 +3,7 @@ import threading
 
 from core.services.question_engine import QuestionEngine
 
-from .models import (
+from ..models import (
     AIAnswer,
     AIInterviewSession,
     AIQuestion,
@@ -12,7 +12,7 @@ from .models import (
     EmailLog,
     Job,
 )
-from .utils import calculate_ats_score
+from ..utils import calculate_ats_score
 
 
 def auto_shortlist(application):

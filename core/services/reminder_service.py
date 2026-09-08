@@ -4,7 +4,7 @@ from core.models import (
     InterviewSchedule,
     ReminderLog,
 )
-from core.services_py import (
+from core.services.application_service import (
     interview_day_before_template,
     interview_hour_before_template,
 )

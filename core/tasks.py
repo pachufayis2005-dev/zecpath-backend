@@ -2,7 +2,7 @@ from celery import shared_task
 
 from core.services import ReminderService
 from core.services.ai_bridge import AIBridgeService
-from core.services_py import send_email_notification
+from core.services.application_service import send_email_notification
 
 from .models import InterviewCall, ReminderLog
 

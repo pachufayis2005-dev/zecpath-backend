@@ -12,7 +12,7 @@ from ..permissions import IsCandidate, IsEmployer
 from ..serializers import ApplicationSerializer, JobSerializer, SavedJobSerializer
 from ..services import AccessValidationService
 from ..services.subscription_service import can_view_ai_analytics
-from ..services_py import (
+from ..services.application_service import (
     application_submitted_template,
     auto_shortlist,
     check_application_eligibility,
