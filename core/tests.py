@@ -400,3 +400,131 @@ class IntegrationAPITest(APITestCase):
         response = self.client.get("/api/jobs/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+class JobRecommendationAPITest(APITestCase):
+
+    def setUp(self):
+        cache.clear()
+
+    def _create_employer_and_job(self, username, email, phone, skills="Python, Django, PostgreSQL", experience="1 year"):
+        self.client.post("/api/signup/", {
+            "username": username,
+            "email": email,
+            "phone": phone,
+            "role": "EMPLOYER",
+            "password": "StrongPass123",
+        })
+        login = self.client.post("/api/login/", {
+            "username": username,
+            "password": "StrongPass123",
+        })
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+
+        job_response = self.client.post("/api/jobs/create/", {
+            "title": "Backend Developer",
+            "description": "Building backend systems with Django.",
+            "skills": skills,
+            "experience": experience,
+            "salary": 600000,
+            "location": "Remote",
+            "job_type": "FULL_TIME",
+            "status": "ACTIVE",
+        })
+        self.client.credentials()  # clear employer auth
+        return job_response.data["id"]
+
+    def _create_candidate(self, username, email, phone):
+        self.client.post("/api/signup/", {
+            "username": username,
+            "email": email,
+            "phone": phone,
+            "role": "CANDIDATE",
+            "password": "StrongPass123",
+        })
+        login = self.client.post("/api/login/", {
+            "username": username,
+            "password": "StrongPass123",
+        })
+        access_token = login.data["access"]
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+
+        candidate = self.client.get("/api/candidate/profile/").wsgi_request.user.candidate
+        return candidate, access_token
+
+    def test_candidate_gets_matching_job_recommended(self):
+
+        job_id = self._create_employer_and_job(
+            "qa_employer_reco1", "qa_employer_reco1@example.com", "9999999989"
+        )
+
+        candidate, access_token = self._create_candidate(
+            "qa_candidate_reco1", "qa_candidate_reco1@example.com", "9999999988"
+        )
+        candidate.skills = "python,django,postgresql"
+        candidate.experience = "2 years"
+        candidate.education = "BCA"
+        candidate.save()
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+        response = self.client.get("/api/jobs/recommended/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["id"], job_id)
+        self.assertEqual(response.data[0]["match_score"], 100.0)
+
+    def test_closed_job_is_never_recommended(self):
+
+        self._create_employer_and_job(
+            "qa_employer_reco2", "qa_employer_reco2@example.com", "9999999987"
+        )
+        # close it directly since create always makes ACTIVE jobs
+        job = Job.objects.get(title="Backend Developer", employer__user__username="qa_employer_reco2")
+        job.status = Job.CLOSED
+        job.save()
+
+        candidate, access_token = self._create_candidate(
+            "qa_candidate_reco2", "qa_candidate_reco2@example.com", "9999999986"
+        )
+        candidate.skills = "python,django,postgresql"
+        candidate.experience = "2 years"
+        candidate.education = "BCA"
+        candidate.save()
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+        response = self.client.get("/api/jobs/recommended/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [])
+
+    def test_candidate_with_no_skills_gets_no_recommendations(self):
+
+        self._create_employer_and_job(
+            "qa_employer_reco3", "qa_employer_reco3@example.com", "9999999985"
+        )
+
+        candidate, access_token = self._create_candidate(
+            "qa_candidate_reco3", "qa_candidate_reco3@example.com", "9999999984"
+        )
+        # leave skills/experience/education blank
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+        response = self.client.get("/api/jobs/recommended/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [])
+
+    def test_employer_cannot_access_recommendations(self):
+
+        self._create_employer_and_job(
+            "qa_employer_reco4", "qa_employer_reco4@example.com", "9999999983"
+        )
+        login = self.client.post("/api/login/", {
+            "username": "qa_employer_reco4",
+            "password": "StrongPass123",
+        })
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+
+        response = self.client.get("/api/jobs/recommended/")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
