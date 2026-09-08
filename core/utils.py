@@ -1,6 +1,6 @@
 import os
 import re
-
+from .models import Job
 import pdfplumber
 from docx import Document
 
@@ -213,3 +213,47 @@ def calculate_ats_score(job, parsed_resume):
         score += 10
 
     return {"score": round(score, 2), "matched_skills": matched_skills}
+
+# -----------------------------
+# Build parsed_resume dict from Candidate profile
+# -----------------------------
+
+
+def build_parsed_resume_from_profile(candidate):
+
+    skills = [
+        skill.strip().lower()
+        for skill in re.split(r"[,\n]+", candidate.skills or "")
+        if skill.strip()
+    ]
+
+    return {
+        "skills": skills,
+        "experience": candidate.experience or "",
+        "education": [candidate.education] if candidate.education else [],
+    }
+
+
+# -----------------------------
+# Job Recommendation Engine
+# -----------------------------
+
+
+def get_recommended_jobs(candidate, top_n=10, min_score=30):
+
+    parsed_resume = build_parsed_resume_from_profile(candidate)
+
+    open_jobs = Job.objects.filter(status=Job.ACTIVE)
+
+    scored_jobs = []
+
+    for job in open_jobs:
+
+        result = calculate_ats_score(job, parsed_resume)
+
+        if result["score"] >= min_score:
+            scored_jobs.append((job, result["score"]))
+
+    scored_jobs.sort(key=lambda pair: pair[1], reverse=True)
+
+    return scored_jobs[:top_n]

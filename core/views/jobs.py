@@ -13,9 +13,10 @@ from rest_framework.views import APIView
 from ..models import Job
 from ..pagination import JobPagination
 from ..permissions import IsCandidate, IsEmployer
-from ..serializers import JobSerializer
+from ..serializers import (JobSerializer,JobRecommendationSerializer)
 from ..services.subscription_service import can_post_job
 from .helpers import validate_job_owner
+from ..utils import get_recommended_jobs
 
 
 @extend_schema(
@@ -204,18 +205,13 @@ class RecommendedJobsAPIView(APIView):
 
         candidate = request.user.candidate
 
-        jobs = Job.objects.filter(status=Job.ACTIVE)
+        scored_jobs = get_recommended_jobs(candidate)
 
-        if candidate.skills:
+        jobs = [job for job, score in scored_jobs]
+        scores = {job.id: score for job, score in scored_jobs}
 
-            skills = [skill.strip() for skill in candidate.skills.split(",")]
-
-            query = Q()
-            for skill in skills:
-                query |= Q(skills__icontains=skill)
-
-            jobs = jobs.filter(query)
-
-        serializer = JobSerializer(jobs, many=True)
+        serializer = JobRecommendationSerializer(
+            jobs, many=True, context={"scores": scores}
+        )
 
         return Response(serializer.data)

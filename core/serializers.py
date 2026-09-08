@@ -188,3 +188,23 @@ class FinancialAuditLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = FinancialAuditLog
         fields = "__all__"
+
+class JobRecommendationSerializer(serializers.ModelSerializer):
+
+    match_score = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Job
+        fields = [
+            "id",
+            "title",
+            "location",
+            "job_type",
+            "salary",
+            "skills",
+            "experience",
+            "match_score",
+        ]
+
+    def get_match_score(self, obj):
+        return self.context.get("scores", {}).get(obj.id, 0)
