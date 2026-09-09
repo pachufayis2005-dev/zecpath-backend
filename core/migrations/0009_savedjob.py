@@ -32,9 +32,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "job",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="core.job"
-                    ),
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="core.job"),
                 ),
             ],
         ),

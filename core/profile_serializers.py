@@ -19,9 +19,7 @@ class CandidateProfileSerializer(serializers.ModelSerializer):
         file_name = value.name.lower()
 
         if not any(file_name.endswith(ext) for ext in allowed_extensions):
-            raise serializers.ValidationError(
-                "Only PDF, DOC and DOCX files are allowed."
-            )
+            raise serializers.ValidationError("Only PDF, DOC and DOCX files are allowed.")
 
         if value.size > 5 * 1024 * 1024:
             raise serializers.ValidationError("File size cannot exceed 5MB.")

@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 from ..models import Job
 from ..pagination import JobPagination
 from ..permissions import IsCandidate, IsEmployer
-from ..serializers import (JobSerializer,JobRecommendationSerializer)
+from ..serializers import JobSerializer, JobRecommendationSerializer
 from ..services.subscription_service import can_post_job
 from .helpers import validate_job_owner
 from ..utils import get_recommended_jobs
@@ -117,14 +117,12 @@ class FeaturedJobAPIView(APIView):
 
     def get(self, request):
 
-
-        jobs = Job.objects.filter(status=Job.ACTIVE, is_featured=True).order_by(
-            "-created_at"
-        )
+        jobs = Job.objects.filter(status=Job.ACTIVE, is_featured=True).order_by("-created_at")
 
         serializer = JobSerializer(jobs, many=True)
 
         return Response(serializer.data)
+
 
 class LatestJobAPIView(APIView):
 
@@ -172,9 +170,7 @@ class JobStatusAPIView(APIView):
         status_value = request.data.get("status")
 
         if status_value not in ["ACTIVE", "CLOSED"]:
-            return Response(
-                {"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST)
 
         job.status = status_value
         job.save()
@@ -188,9 +184,7 @@ class EmployerJobsAPIView(APIView):
 
     def get(self, request):
 
-        jobs = Job.objects.filter(employer=request.user.employer).order_by(
-            "-created_at"
-        )
+        jobs = Job.objects.filter(employer=request.user.employer).order_by("-created_at")
 
         serializer = JobSerializer(jobs, many=True)
 
@@ -210,8 +204,6 @@ class RecommendedJobsAPIView(APIView):
         jobs = [job for job, score in scored_jobs]
         scores = {job.id: score for job, score in scored_jobs}
 
-        serializer = JobRecommendationSerializer(
-            jobs, many=True, context={"scores": scores}
-        )
+        serializer = JobRecommendationSerializer(jobs, many=True, context={"scores": scores})
 
         return Response(serializer.data)

@@ -21,9 +21,7 @@ class BillingService:
         """
 
         if payment.status != PaymentTransaction.SUCCESS:
-            raise ValueError(
-                "Billing history can only be created " "for successful payments."
-            )
+            raise ValueError("Billing history can only be created " "for successful payments.")
 
         existing_record = BillingHistory.objects.filter(transaction=payment).first()
 

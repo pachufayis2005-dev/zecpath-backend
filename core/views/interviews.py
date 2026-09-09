@@ -125,9 +125,7 @@ class AvailabilityListAPIView(APIView):
 
     def get(self, request):
 
-        slots = AvailabilitySlot.objects.filter(is_booked=False).order_by(
-            "date", "start_time"
-        )
+        slots = AvailabilitySlot.objects.filter(is_booked=False).order_by("date", "start_time")
 
         serializer = AvailabilitySlotSerializer(slots, many=True)
 
@@ -145,9 +143,7 @@ class BookInterviewAPIView(APIView):
 
         try:
             application = Application.objects.get(id=application_id)
-            AccessValidationService.validate_application_owner(
-                request.user, application
-            )
+            AccessValidationService.validate_application_owner(request.user, application)
             slot = AvailabilitySlot.objects.get(id=slot_id)
         except (Application.DoesNotExist, AvailabilitySlot.DoesNotExist):
             return Response(
@@ -209,17 +205,13 @@ class CandidateReportAPIView(APIView):
 
         if not can_view_ai_analytics(employer):
             return Response(
-                {
-                    "error": "Your subscription does not allow access to candidate reports."
-                },
+                {"error": "Your subscription does not allow access to candidate reports."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
         application = get_object_or_404(Application, pk=pk)
 
-        AccessValidationService.validate_application_job_owner(
-            request.user, application
-        )
+        AccessValidationService.validate_application_job_owner(request.user, application)
 
         report = CandidateReportService().generate_report(application)
 

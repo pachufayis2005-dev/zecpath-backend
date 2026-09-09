@@ -207,39 +207,39 @@ SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 
 
-os.makedirs(BASE_DIR / 'logs', exist_ok=True)
+os.makedirs(BASE_DIR / "logs", exist_ok=True)
 
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{asctime} {levelname} {module} - {message}',
-            'style': '{',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{asctime} {levelname} {module} - {message}",
+            "style": "{",
         },
     },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-            'level': 'INFO',
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+            "level": "INFO",
         },
-        'app_file': {
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs/django_app.log',
-            'formatter': 'verbose',
-            'level': 'INFO',
+        "app_file": {
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs/django_app.log",
+            "formatter": "verbose",
+            "level": "INFO",
         },
-        'error_file': {
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs/django_errors.log',
-            'formatter': 'verbose',
-            'level': 'ERROR',
+        "error_file": {
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs/django_errors.log",
+            "formatter": "verbose",
+            "level": "ERROR",
         },
     },
-    'root': {
-        'handlers': ['console', 'app_file', 'error_file'],
-        'level': 'INFO',
+    "root": {
+        "handlers": ["console", "app_file", "error_file"],
+        "level": "INFO",
     },
 }

@@ -167,9 +167,7 @@ def calculate_ats_score(job, parsed_resume):
     # -----------------------------
 
     job_skills = [
-        skill.strip().lower()
-        for skill in re.split(r"[,\n]+", job.skills)
-        if skill.strip()
+        skill.strip().lower() for skill in re.split(r"[,\n]+", job.skills) if skill.strip()
     ]
 
     resume_skills = [skill.lower() for skill in parsed_resume["skills"]]
@@ -213,6 +211,7 @@ def calculate_ats_score(job, parsed_resume):
         score += 10
 
     return {"score": round(score, 2), "matched_skills": matched_skills}
+
 
 # -----------------------------
 # Build parsed_resume dict from Candidate profile

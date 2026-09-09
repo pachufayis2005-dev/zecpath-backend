@@ -54,16 +54,10 @@ class ApplyJobAPIView(APIView):
         job = get_object_or_404(Job, id=pk)
 
         if job.status != Job.ACTIVE:
-            return Response(
-                {"error": "Job is closed"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "Job is closed"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if Application.objects.filter(
-            candidate=request.user.candidate, job=job
-        ).exists():
-            return Response(
-                {"error": "Already applied"}, status=status.HTTP_400_BAD_REQUEST
-            )
+        if Application.objects.filter(candidate=request.user.candidate, job=job).exists():
+            return Response({"error": "Already applied"}, status=status.HTTP_400_BAD_REQUEST)
 
         resume = ""
         if request.user.candidate.resume:
@@ -95,9 +89,7 @@ class ApplyJobAPIView(APIView):
         interview_ready = check_application_eligibility(application)
 
         if interview_ready:
-            logger.debug(
-                "Application %s is eligible for interview scheduling.", application.id
-            )
+            logger.debug("Application %s is eligible for interview scheduling.", application.id)
 
             InterviewCall.objects.create(
                 application=application,
@@ -152,9 +144,9 @@ class AppliedJobsAPIView(APIView):
 
     def get(self, request):
 
-        applications = Application.objects.filter(
-            candidate=request.user.candidate
-        ).select_related("job")
+        applications = Application.objects.filter(candidate=request.user.candidate).select_related(
+            "job"
+        )
 
         jobs = [application.job for application in applications]
 
@@ -174,9 +166,7 @@ class ApplicationStatusUpdateAPIView(APIView):
         )
 
         if application.job.employer != request.user.employer:
-            return Response(
-                {"error": "Not your application"}, status=status.HTTP_403_FORBIDDEN
-            )
+            return Response({"error": "Not your application"}, status=status.HTTP_403_FORBIDDEN)
 
         new_status = request.data.get("status")
 
@@ -189,9 +179,7 @@ class ApplicationStatusUpdateAPIView(APIView):
         ]
 
         if new_status not in valid_statuses:
-            return Response(
-                {"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST)
 
         application.status = new_status
         application.save()
@@ -210,9 +198,7 @@ class ApplicationStatusUpdateAPIView(APIView):
             )
             send_email_task.delay(application.candidate.user.email, subject, message)
 
-        return Response(
-            {"message": "Application status updated", "status": application.status}
-        )
+        return Response({"message": "Application status updated", "status": application.status})
 
 
 class ApplicantListAPIView(APIView):
@@ -233,9 +219,7 @@ class ApplicantListAPIView(APIView):
 
         search = request.GET.get("search")
         if search:
-            applications = applications.filter(
-                candidate__user__username__icontains=search
-            )
+            applications = applications.filter(candidate__user__username__icontains=search)
 
         applications = applications.select_related("candidate", "candidate__user")
 
@@ -255,15 +239,9 @@ class ApplicationCountAPIView(APIView):
         validate_job_owner(request.user, job)
 
         total = Application.objects.filter(job=job).count()
-        shortlisted = Application.objects.filter(
-            job=job, status=Application.SHORTLISTED
-        ).count()
-        rejected = Application.objects.filter(
-            job=job, status=Application.REJECTED
-        ).count()
-        selected = Application.objects.filter(
-            job=job, status=Application.SELECTED
-        ).count()
+        shortlisted = Application.objects.filter(job=job, status=Application.SHORTLISTED).count()
+        rejected = Application.objects.filter(job=job, status=Application.REJECTED).count()
+        selected = Application.objects.filter(job=job, status=Application.SELECTED).count()
 
         return Response(
             {
@@ -287,9 +265,7 @@ class ShortlistRatioAPIView(APIView):
         validate_job_owner(request.user, job)
 
         total = Application.objects.filter(job=job).count()
-        shortlisted = Application.objects.filter(
-            job=job, status=Application.SHORTLISTED
-        ).count()
+        shortlisted = Application.objects.filter(job=job, status=Application.SHORTLISTED).count()
 
         ratio = 0 if total == 0 else round((shortlisted / total) * 100, 2)
 
@@ -309,9 +285,7 @@ class SavedJobsAPIView(APIView):
 
     def get(self, request):
 
-        saved_jobs = SavedJob.objects.filter(
-            candidate=request.user.candidate
-        ).select_related("job")
+        saved_jobs = SavedJob.objects.filter(candidate=request.user.candidate).select_related("job")
 
         serializer = SavedJobSerializer(saved_jobs, many=True)
 
@@ -327,9 +301,7 @@ class SaveJobAPIView(APIView):
         job = get_object_or_404(Job, id=pk)
 
         if SavedJob.objects.filter(candidate=request.user.candidate, job=job).exists():
-            return Response(
-                {"error": "Job already saved"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "Job already saved"}, status=status.HTTP_400_BAD_REQUEST)
 
         saved_job = SavedJob.objects.create(candidate=request.user.candidate, job=job)
 
@@ -344,9 +316,7 @@ class CandidateDashboardAPIView(APIView):
 
     def get(self, request):
 
-        applied_jobs = Application.objects.filter(
-            candidate=request.user.candidate
-        ).count()
+        applied_jobs = Application.objects.filter(candidate=request.user.candidate).count()
         saved_jobs = SavedJob.objects.filter(candidate=request.user.candidate).count()
 
         return Response(
@@ -390,9 +360,9 @@ class InterviewStatusAPIView(APIView):
 
     def get(self, request):
 
-        applications = Application.objects.filter(
-            candidate=request.user.candidate
-        ).select_related("job")
+        applications = Application.objects.filter(candidate=request.user.candidate).select_related(
+            "job"
+        )
 
         data = [
             {
@@ -420,16 +390,12 @@ class UpdateApplicationStatusAPIView(APIView):
 
         application = get_object_or_404(Application, id=pk)
 
-        AccessValidationService.validate_application_job_owner(
-            request.user, application
-        )
+        AccessValidationService.validate_application_job_owner(request.user, application)
 
         new_status = request.data.get("status")
 
         if new_status not in [Application.SHORTLISTED, Application.REJECTED]:
-            return Response(
-                {"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST)
 
         application.status = new_status
         application.save()
@@ -481,9 +447,7 @@ class RankedCandidatesAPIView(APIView):
 
         if not can_view_ai_analytics(employer):
             return Response(
-                {
-                    "error": "Your subscription does not allow access to candidate ranking."
-                },
+                {"error": "Your subscription does not allow access to candidate ranking."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 

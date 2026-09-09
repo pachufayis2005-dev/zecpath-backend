@@ -43,9 +43,7 @@ class AnswerEvaluator:
         ai_answer.final_score = final
         ai_answer.matched_keywords = matched
 
-        ai_answer.ai_feedback = (
-            f"Matched {len(matched)} keyword(s). " f"Overall score: {final}"
-        )
+        ai_answer.ai_feedback = f"Matched {len(matched)} keyword(s). " f"Overall score: {final}"
 
         ai_answer.evaluated_at = timezone.now()
 

@@ -36,8 +36,5 @@ class FinancialSecurityService:
             transaction=transaction,
             employer=transaction.employer,
             action=FinancialAuditLog.SUSPICIOUS_TRANSACTION,
-            message=(
-                "Transaction exceeded the configured "
-                "financial monitoring threshold."
-            ),
+            message=("Transaction exceeded the configured " "financial monitoring threshold."),
         )

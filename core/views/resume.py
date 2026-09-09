@@ -54,9 +54,7 @@ class ResumeParserAPIView(APIView):
         education = parsed_resume["education"]
 
         job_skills = [
-            skill.strip().lower()
-            for skill in re.split(r"[,\n]+", job.skills)
-            if skill.strip()
+            skill.strip().lower() for skill in re.split(r"[,\n]+", job.skills) if skill.strip()
         ]
 
         resume_skills = [skill.lower() for skill in skills]

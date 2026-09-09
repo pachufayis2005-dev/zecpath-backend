@@ -12,8 +12,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddIndex(
             model_name="job",
-            index=models.Index(
-                fields=["status", "location"], name="core_job_status_b2f27a_idx"
-            ),
+            index=models.Index(fields=["status", "location"], name="core_job_status_b2f27a_idx"),
         ),
     ]

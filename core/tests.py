@@ -10,8 +10,6 @@ from django.conf import settings
 from core.models import PaymentTransaction
 from django.core.cache import cache
 
-
-
 User = get_user_model()
 
 
@@ -39,13 +37,16 @@ class JobModelTest(TestCase):
 class SignupAPITest(APITestCase):
 
     def test_signup_creates_candidate_and_returns_201(self):
-        response = self.client.post("/api/signup/", {
-            "username": "qa_candidate1",
-            "email": "qa_candidate1@example.com",
-            "phone": "9999999999",
-            "role": "CANDIDATE",
-            "password": "StrongPass123",
-        })
+        response = self.client.post(
+            "/api/signup/",
+            {
+                "username": "qa_candidate1",
+                "email": "qa_candidate1@example.com",
+                "phone": "9999999999",
+                "role": "CANDIDATE",
+                "password": "StrongPass123",
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(User.objects.filter(username="qa_candidate1").exists())
@@ -58,15 +59,19 @@ class SignupAPITest(APITestCase):
             role="CANDIDATE",
         )
 
-        response = self.client.post("/api/signup/", {
-            "username": "another_user",
-            "email": "dupe@example.com",
-            "phone": "8888888888",
-            "role": "CANDIDATE",
-            "password": "StrongPass123",
-        })
+        response = self.client.post(
+            "/api/signup/",
+            {
+                "username": "another_user",
+                "email": "dupe@example.com",
+                "phone": "8888888888",
+                "role": "CANDIDATE",
+                "password": "StrongPass123",
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class JobPostingAPITest(APITestCase):
 
@@ -74,69 +79,86 @@ class JobPostingAPITest(APITestCase):
         cache.clear()
 
     def test_employer_can_post_job(self):
-        signup_response = self.client.post("/api/signup/", {
-            "username": "qa_employer1",
-            "email": "qa_employer1@example.com",
-            "phone": "9999999998",
-            "role": "EMPLOYER",
-            "password": "StrongPass123",
-        })
+        signup_response = self.client.post(
+            "/api/signup/",
+            {
+                "username": "qa_employer1",
+                "email": "qa_employer1@example.com",
+                "phone": "9999999998",
+                "role": "EMPLOYER",
+                "password": "StrongPass123",
+            },
+        )
         self.assertEqual(signup_response.status_code, status.HTTP_201_CREATED)
 
-        login_response = self.client.post("/api/login/", {
-            "username": "qa_employer1",
-            "password": "StrongPass123",
-        })
+        login_response = self.client.post(
+            "/api/login/",
+            {
+                "username": "qa_employer1",
+                "password": "StrongPass123",
+            },
+        )
         self.assertEqual(login_response.status_code, status.HTTP_200_OK)
         access_token = login_response.data["access"]
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
 
-        job_response = self.client.post("/api/jobs/create/", {
-            "title": "Python Developer",
-            "description": "Building backend systems with Django.",
-            "skills": "Python, Django, PostgreSQL",
-            "experience": "1-3 years",
-            "salary": 600000,
-            "location": "Remote",
-            "job_type": "FULL_TIME",
-            "status": "ACTIVE",
-        })
+        job_response = self.client.post(
+            "/api/jobs/create/",
+            {
+                "title": "Python Developer",
+                "description": "Building backend systems with Django.",
+                "skills": "Python, Django, PostgreSQL",
+                "experience": "1-3 years",
+                "salary": 600000,
+                "location": "Remote",
+                "job_type": "FULL_TIME",
+                "status": "ACTIVE",
+            },
+        )
 
         self.assertEqual(job_response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(job_response.data["title"], "Python Developer")
 
     def test_candidate_cannot_post_job(self):
-        signup_response = self.client.post("/api/signup/", {
-            "username": "qa_candidate2",
-            "email": "qa_candidate2@example.com",
-            "phone": "9999999997",
-            "role": "CANDIDATE",
-            "password": "StrongPass123",
-        })
+        signup_response = self.client.post(
+            "/api/signup/",
+            {
+                "username": "qa_candidate2",
+                "email": "qa_candidate2@example.com",
+                "phone": "9999999997",
+                "role": "CANDIDATE",
+                "password": "StrongPass123",
+            },
+        )
         self.assertEqual(signup_response.status_code, status.HTTP_201_CREATED)
 
-        login_response = self.client.post("/api/login/", {
-            "username": "qa_candidate2",
-            "password": "StrongPass123",
-        })
+        login_response = self.client.post(
+            "/api/login/",
+            {
+                "username": "qa_candidate2",
+                "password": "StrongPass123",
+            },
+        )
         access_token = login_response.data["access"]
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
 
-        job_response = self.client.post("/api/jobs/create/", {
-            "title": "Should Not Be Created",
-            "description": "This should fail.",
-            "skills": "N/A",
-            "experience": "0",
-            "salary": 100000,
-            "location": "Remote",
-            "job_type": "FULL_TIME",
-            "status": "ACTIVE",
-        })
+        job_response = self.client.post(
+            "/api/jobs/create/",
+            {
+                "title": "Should Not Be Created",
+                "description": "This should fail.",
+                "skills": "N/A",
+                "experience": "0",
+                "salary": 100000,
+                "location": "Remote",
+                "job_type": "FULL_TIME",
+                "status": "ACTIVE",
+            },
+        )
 
         self.assertEqual(job_response.status_code, status.HTTP_403_FORBIDDEN)
-
 
 
 class AIInterviewAPITest(APITestCase):
@@ -145,29 +167,38 @@ class AIInterviewAPITest(APITestCase):
         cache.clear()
 
     def _create_employer_and_job(self):
-        self.client.post("/api/signup/", {
-            "username": "qa_employer2",
-            "email": "qa_employer2@example.com",
-            "phone": "9999999996",
-            "role": "EMPLOYER",
-            "password": "StrongPass123",
-        })
-        login = self.client.post("/api/login/", {
-            "username": "qa_employer2",
-            "password": "StrongPass123",
-        })
+        self.client.post(
+            "/api/signup/",
+            {
+                "username": "qa_employer2",
+                "email": "qa_employer2@example.com",
+                "phone": "9999999996",
+                "role": "EMPLOYER",
+                "password": "StrongPass123",
+            },
+        )
+        login = self.client.post(
+            "/api/login/",
+            {
+                "username": "qa_employer2",
+                "password": "StrongPass123",
+            },
+        )
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
 
-        job_response = self.client.post("/api/jobs/create/", {
-            "title": "Django Developer",
-            "description": "Backend role.",
-            "skills": "Python, Django",
-            "experience": "1-3 years",
-            "salary": 700000,
-            "location": "Remote",
-            "job_type": "FULL_TIME",
-            "status": "ACTIVE",
-        })
+        job_response = self.client.post(
+            "/api/jobs/create/",
+            {
+                "title": "Django Developer",
+                "description": "Backend role.",
+                "skills": "Python, Django",
+                "experience": "1-3 years",
+                "salary": 700000,
+                "location": "Remote",
+                "job_type": "FULL_TIME",
+                "status": "ACTIVE",
+            },
+        )
         self.client.credentials()  # clear employer auth
         return job_response.data["id"]
 
@@ -180,22 +211,31 @@ class AIInterviewAPITest(APITestCase):
     ):
         job_id = self._create_employer_and_job()
 
-        self.client.post("/api/signup/", {
-            "username": "qa_candidate3",
-            "email": "qa_candidate3@example.com",
-            "phone": "9999999995",
-            "role": "CANDIDATE",
-            "password": "StrongPass123",
-        })
-        login = self.client.post("/api/login/", {
-            "username": "qa_candidate3",
-            "password": "StrongPass123",
-        })
+        self.client.post(
+            "/api/signup/",
+            {
+                "username": "qa_candidate3",
+                "email": "qa_candidate3@example.com",
+                "phone": "9999999995",
+                "role": "CANDIDATE",
+                "password": "StrongPass123",
+            },
+        )
+        login = self.client.post(
+            "/api/login/",
+            {
+                "username": "qa_candidate3",
+                "password": "StrongPass123",
+            },
+        )
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
 
-        apply_response = self.client.post(f"/api/jobs/{job_id}/apply/", {
-            "cover_letter": "I am excited to apply for this role.",
-        })
+        apply_response = self.client.post(
+            f"/api/jobs/{job_id}/apply/",
+            {
+                "cover_letter": "I am excited to apply for this role.",
+            },
+        )
 
         self.assertEqual(apply_response.status_code, status.HTTP_201_CREATED)
 
@@ -212,13 +252,13 @@ class AIInterviewAPITest(APITestCase):
 
         answer_response = self.client.post(
             f"/api/ai-answer/{first_question.id}/submit/",
-            {"answer": "I have three years of experience with Django and Python, building REST APIs."},
+            {
+                "answer": "I have three years of experience with Django and Python, building REST APIs."
+            },
         )
 
         self.assertEqual(answer_response.status_code, status.HTTP_200_OK)
         self.assertIn("score", answer_response.data)
-
-
 
 
 class PaymentAPITest(APITestCase):
@@ -226,40 +266,44 @@ class PaymentAPITest(APITestCase):
     def setUp(self):
         cache.clear()
 
-
     def _create_employer(self):
-        self.client.post("/api/signup/", {
-            "username": "qa_employer3",
-            "email": "qa_employer3@example.com",
-            "phone": "9999999994",
-            "role": "EMPLOYER",
-            "password": "StrongPass123",
-        })
-        login = self.client.post("/api/login/", {
-            "username": "qa_employer3",
-            "password": "StrongPass123",
-        })
+        self.client.post(
+            "/api/signup/",
+            {
+                "username": "qa_employer3",
+                "email": "qa_employer3@example.com",
+                "phone": "9999999994",
+                "role": "EMPLOYER",
+                "password": "StrongPass123",
+            },
+        )
+        login = self.client.post(
+            "/api/login/",
+            {
+                "username": "qa_employer3",
+                "password": "StrongPass123",
+            },
+        )
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
 
     @patch("core.services.payment_service.razorpay.Client")
     def test_create_payment_order(self, mock_razorpay_client):
-        mock_razorpay_client.return_value.order.create.return_value = {
-            "id": "order_test123"
-        }
+        mock_razorpay_client.return_value.order.create.return_value = {"id": "order_test123"}
 
         self._create_employer()
 
-        response = self.client.post("/api/payments/create-order/", {
-            "amount": 999,
-            "currency": "INR",
-        })
+        response = self.client.post(
+            "/api/payments/create-order/",
+            {
+                "amount": 999,
+                "currency": "INR",
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["razorpay_order_id"], "order_test123")
         self.assertTrue(
-            PaymentTransaction.objects.filter(
-                razorpay_order_id="order_test123"
-            ).exists()
+            PaymentTransaction.objects.filter(razorpay_order_id="order_test123").exists()
         )
 
     def test_verify_payment_with_valid_signature(self):
@@ -283,11 +327,14 @@ class PaymentAPITest(APITestCase):
             hashlib.sha256,
         ).hexdigest()
 
-        response = self.client.post("/api/payments/verify/", {
-            "razorpay_order_id": transaction.razorpay_order_id,
-            "razorpay_payment_id": razorpay_payment_id,
-            "razorpay_signature": generated_signature,
-        })
+        response = self.client.post(
+            "/api/payments/verify/",
+            {
+                "razorpay_order_id": transaction.razorpay_order_id,
+                "razorpay_payment_id": razorpay_payment_id,
+                "razorpay_signature": generated_signature,
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -305,13 +352,17 @@ class PaymentAPITest(APITestCase):
             status=PaymentTransaction.PENDING,
         )
 
-        response = self.client.post("/api/payments/verify/", {
-            "razorpay_order_id": transaction.razorpay_order_id,
-            "razorpay_payment_id": "pay_test789",
-            "razorpay_signature": "totally_wrong_signature",
-        })
+        response = self.client.post(
+            "/api/payments/verify/",
+            {
+                "razorpay_order_id": transaction.razorpay_order_id,
+                "razorpay_payment_id": "pay_test789",
+                "razorpay_signature": "totally_wrong_signature",
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class IntegrationAPITest(APITestCase):
 
@@ -319,40 +370,55 @@ class IntegrationAPITest(APITestCase):
         cache.clear()
 
     def test_signup_with_missing_fields_returns_400_not_500(self):
-        response = self.client.post("/api/signup/", {
-            "username": "incomplete_user",
-        })
+        response = self.client.post(
+            "/api/signup/",
+            {
+                "username": "incomplete_user",
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_signup_with_invalid_role_returns_400(self):
-        response = self.client.post("/api/signup/", {
-            "username": "bad_role_user",
-            "email": "badrole@example.com",
-            "phone": "9999999993",
-            "role": "SUPERADMIN",
-            "password": "StrongPass123",
-        })
+        response = self.client.post(
+            "/api/signup/",
+            {
+                "username": "bad_role_user",
+                "email": "badrole@example.com",
+                "phone": "9999999993",
+                "role": "SUPERADMIN",
+                "password": "StrongPass123",
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_job_create_with_missing_fields_returns_400_not_500(self):
-        self.client.post("/api/signup/", {
-            "username": "qa_employer4",
-            "email": "qa_employer4@example.com",
-            "phone": "9999999992",
-            "role": "EMPLOYER",
-            "password": "StrongPass123",
-        })
-        login = self.client.post("/api/login/", {
-            "username": "qa_employer4",
-            "password": "StrongPass123",
-        })
+        self.client.post(
+            "/api/signup/",
+            {
+                "username": "qa_employer4",
+                "email": "qa_employer4@example.com",
+                "phone": "9999999992",
+                "role": "EMPLOYER",
+                "password": "StrongPass123",
+            },
+        )
+        login = self.client.post(
+            "/api/login/",
+            {
+                "username": "qa_employer4",
+                "password": "StrongPass123",
+            },
+        )
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
 
-        response = self.client.post("/api/jobs/create/", {
-            "title": "Incomplete Job",
-        })
+        response = self.client.post(
+            "/api/jobs/create/",
+            {
+                "title": "Incomplete Job",
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -369,30 +435,37 @@ class IntegrationAPITest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     @patch("core.services.payment_service.razorpay.Client")
-    def test_payment_order_creation_handles_razorpay_failure_gracefully(
-        self, mock_razorpay_client
-    ):
+    def test_payment_order_creation_handles_razorpay_failure_gracefully(self, mock_razorpay_client):
         mock_razorpay_client.return_value.order.create.side_effect = Exception(
             "Razorpay service unavailable"
         )
 
-        self.client.post("/api/signup/", {
-            "username": "qa_employer5",
-            "email": "qa_employer5@example.com",
-            "phone": "9999999991",
-            "role": "EMPLOYER",
-            "password": "StrongPass123",
-        })
-        login = self.client.post("/api/login/", {
-            "username": "qa_employer5",
-            "password": "StrongPass123",
-        })
+        self.client.post(
+            "/api/signup/",
+            {
+                "username": "qa_employer5",
+                "email": "qa_employer5@example.com",
+                "phone": "9999999991",
+                "role": "EMPLOYER",
+                "password": "StrongPass123",
+            },
+        )
+        login = self.client.post(
+            "/api/login/",
+            {
+                "username": "qa_employer5",
+                "password": "StrongPass123",
+            },
+        )
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
 
-        response = self.client.post("/api/payments/create-order/", {
-            "amount": 999,
-            "currency": "INR",
-        })
+        response = self.client.post(
+            "/api/payments/create-order/",
+            {
+                "amount": 999,
+                "currency": "INR",
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_502_BAD_GATEWAY)
 
@@ -401,50 +474,68 @@ class IntegrationAPITest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+
 class JobRecommendationAPITest(APITestCase):
 
     def setUp(self):
         cache.clear()
 
-    def _create_employer_and_job(self, username, email, phone, skills="Python, Django, PostgreSQL", experience="1 year"):
-        self.client.post("/api/signup/", {
-            "username": username,
-            "email": email,
-            "phone": phone,
-            "role": "EMPLOYER",
-            "password": "StrongPass123",
-        })
-        login = self.client.post("/api/login/", {
-            "username": username,
-            "password": "StrongPass123",
-        })
+    def _create_employer_and_job(
+        self, username, email, phone, skills="Python, Django, PostgreSQL", experience="1 year"
+    ):
+        self.client.post(
+            "/api/signup/",
+            {
+                "username": username,
+                "email": email,
+                "phone": phone,
+                "role": "EMPLOYER",
+                "password": "StrongPass123",
+            },
+        )
+        login = self.client.post(
+            "/api/login/",
+            {
+                "username": username,
+                "password": "StrongPass123",
+            },
+        )
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
 
-        job_response = self.client.post("/api/jobs/create/", {
-            "title": "Backend Developer",
-            "description": "Building backend systems with Django.",
-            "skills": skills,
-            "experience": experience,
-            "salary": 600000,
-            "location": "Remote",
-            "job_type": "FULL_TIME",
-            "status": "ACTIVE",
-        })
+        job_response = self.client.post(
+            "/api/jobs/create/",
+            {
+                "title": "Backend Developer",
+                "description": "Building backend systems with Django.",
+                "skills": skills,
+                "experience": experience,
+                "salary": 600000,
+                "location": "Remote",
+                "job_type": "FULL_TIME",
+                "status": "ACTIVE",
+            },
+        )
         self.client.credentials()  # clear employer auth
         return job_response.data["id"]
 
     def _create_candidate(self, username, email, phone):
-        self.client.post("/api/signup/", {
-            "username": username,
-            "email": email,
-            "phone": phone,
-            "role": "CANDIDATE",
-            "password": "StrongPass123",
-        })
-        login = self.client.post("/api/login/", {
-            "username": username,
-            "password": "StrongPass123",
-        })
+        self.client.post(
+            "/api/signup/",
+            {
+                "username": username,
+                "email": email,
+                "phone": phone,
+                "role": "CANDIDATE",
+                "password": "StrongPass123",
+            },
+        )
+        login = self.client.post(
+            "/api/login/",
+            {
+                "username": username,
+                "password": "StrongPass123",
+            },
+        )
         access_token = login.data["access"]
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
 
@@ -479,7 +570,9 @@ class JobRecommendationAPITest(APITestCase):
             "qa_employer_reco2", "qa_employer_reco2@example.com", "9999999987"
         )
         # close it directly since create always makes ACTIVE jobs
-        job = Job.objects.get(title="Backend Developer", employer__user__username="qa_employer_reco2")
+        job = Job.objects.get(
+            title="Backend Developer", employer__user__username="qa_employer_reco2"
+        )
         job.status = Job.CLOSED
         job.save()
 
@@ -519,10 +612,13 @@ class JobRecommendationAPITest(APITestCase):
         self._create_employer_and_job(
             "qa_employer_reco4", "qa_employer_reco4@example.com", "9999999983"
         )
-        login = self.client.post("/api/login/", {
-            "username": "qa_employer_reco4",
-            "password": "StrongPass123",
-        })
+        login = self.client.post(
+            "/api/login/",
+            {
+                "username": "qa_employer_reco4",
+                "password": "StrongPass123",
+            },
+        )
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
 
         response = self.client.get("/api/jobs/recommended/")

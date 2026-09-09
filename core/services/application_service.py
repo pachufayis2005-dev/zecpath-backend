@@ -219,9 +219,7 @@ def create_ai_interview_session(application):
     empty answers and audit log.
     """
 
-    session = AIInterviewSession.objects.create(
-        interview_call=application.interview_call
-    )
+    session = AIInterviewSession.objects.create(interview_call=application.interview_call)
 
     engine = QuestionEngine()
 

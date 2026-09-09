@@ -106,9 +106,7 @@ class Job(models.Model):
 
     location = models.CharField(max_length=200, blank=True)
 
-    job_type = models.CharField(
-        max_length=20, choices=JOB_TYPE_CHOICES, default=FULL_TIME
-    )
+    job_type = models.CharField(max_length=20, choices=JOB_TYPE_CHOICES, default=FULL_TIME)
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=ACTIVE)
 
@@ -757,9 +755,7 @@ class UserSubscription(models.Model):
     )
 
     def __str__(self):
-        return (
-            f"{self.employer.company_name} - " f"{self.plan.name} - " f"{self.status}"
-        )
+        return f"{self.employer.company_name} - " f"{self.plan.name} - " f"{self.status}"
 
 
 class PaymentTransaction(models.Model):

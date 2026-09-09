@@ -189,6 +189,7 @@ class FinancialAuditLogSerializer(serializers.ModelSerializer):
         model = FinancialAuditLog
         fields = "__all__"
 
+
 class JobRecommendationSerializer(serializers.ModelSerializer):
 
     match_score = serializers.SerializerMethodField()

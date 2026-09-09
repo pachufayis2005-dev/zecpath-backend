@@ -21,9 +21,7 @@ class CandidateProfileAPIView(APIView):
     def put(self, request):
 
         profile = request.user.candidate
-        serializer = CandidateProfileSerializer(
-            profile, data=request.data, partial=True
-        )
+        serializer = CandidateProfileSerializer(profile, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()

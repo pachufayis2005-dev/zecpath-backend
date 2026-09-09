@@ -12,12 +12,8 @@ class AnalyticsService:
 
         return {
             "applied": Application.objects.filter(status=Application.APPLIED).count(),
-            "under_review": Application.objects.filter(
-                status=Application.UNDER_REVIEW
-            ).count(),
-            "shortlisted": Application.objects.filter(
-                status=Application.SHORTLISTED
-            ).count(),
+            "under_review": Application.objects.filter(status=Application.UNDER_REVIEW).count(),
+            "shortlisted": Application.objects.filter(status=Application.SHORTLISTED).count(),
             "interviewed": Application.objects.filter(
                 status=Application.INTERVIEW_SCHEDULED
             ).count(),
@@ -85,9 +81,7 @@ class AnalyticsService:
 
         shortlisted = Application.objects.filter(status=Application.SHORTLISTED).count()
 
-        interviewed = Application.objects.filter(
-            status=Application.INTERVIEW_SCHEDULED
-        ).count()
+        interviewed = Application.objects.filter(status=Application.INTERVIEW_SCHEDULED).count()
 
         selected = Application.objects.filter(status=Application.SELECTED).count()
 

@@ -52,9 +52,7 @@ class PaymentService:
 
         now = timezone.now()
 
-        invoice_number = (
-            f"INV-{now.strftime('%Y%m%d')}-" f"{uuid.uuid4().hex[:12].upper()}"
-        )
+        invoice_number = f"INV-{now.strftime('%Y%m%d')}-" f"{uuid.uuid4().hex[:12].upper()}"
 
         return BillingHistory.objects.create(
             employer=payment.employer,
@@ -228,9 +226,7 @@ class PaymentService:
                 employer=payment.employer,
                 action=(FinancialAuditLog.PAYMENT_FAILED),
                 message=(
-                    "Payment verification failed "
-                    "because the Razorpay signature "
-                    "was invalid."
+                    "Payment verification failed " "because the Razorpay signature " "was invalid."
                 ),
             )
 
@@ -363,9 +359,7 @@ class PaymentService:
 
             payment_id = payment_entity.get("id")
 
-            payment = PaymentTransaction.objects.filter(
-                razorpay_payment_id=payment_id
-            ).first()
+            payment = PaymentTransaction.objects.filter(razorpay_payment_id=payment_id).first()
 
             if not payment:
                 return
@@ -412,9 +406,7 @@ class PaymentService:
 
             payment_id = refund_entity.get("payment_id")
 
-            payment = PaymentTransaction.objects.filter(
-                razorpay_payment_id=payment_id
-            ).first()
+            payment = PaymentTransaction.objects.filter(razorpay_payment_id=payment_id).first()
 
             if not payment:
                 return

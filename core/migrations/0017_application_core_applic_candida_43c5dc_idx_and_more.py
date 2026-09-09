@@ -12,9 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddIndex(
             model_name="application",
-            index=models.Index(
-                fields=["candidate"], name="core_applic_candida_43c5dc_idx"
-            ),
+            index=models.Index(fields=["candidate"], name="core_applic_candida_43c5dc_idx"),
         ),
         migrations.AddIndex(
             model_name="application",
