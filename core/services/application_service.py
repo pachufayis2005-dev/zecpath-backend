@@ -1,3 +1,4 @@
+import logging
 import random
 import threading
 
@@ -13,6 +14,8 @@ from ..models import (
     Job,
 )
 from ..utils import calculate_ats_score
+
+logger = logging.getLogger(__name__)
 
 
 def auto_shortlist(application):
@@ -72,25 +75,23 @@ def send_email_notification(
     while attempt < max_retries and not success:
         attempt += 1
         try:
-            print("=" * 50)
-            print(f"Attempt {attempt}: Sending email...")
-            print("To:", recipient)
-            print("Subject:", subject)
-            print("Message:")
-            print(message)
+            logger.info(
+                "Attempt %s: Sending email to %s | Subject: %s",
+                attempt,
+                recipient,
+                subject,
+            )
 
             # Simulate a random failure (30% chance)
             # This lets us TEST the retry logic without a real email server.
             if random.random() < 0.3:
                 raise Exception("Simulated email server error")
 
-            print("EMAIL SENT SUCCESSFULLY")
-            print("=" * 50)
+            logger.info("Email sent successfully to %s", recipient)
             success = True
 
         except Exception as e:
-            print(f"Attempt {attempt} FAILED: {e}")
-            print("=" * 50)
+            logger.warning("Attempt %s FAILED for %s: %s", attempt, recipient, e)
 
     # After the loop, log the final result
     if success:

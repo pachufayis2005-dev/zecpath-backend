@@ -1,6 +1,9 @@
+import logging
 import os
 import random
 import time
+
+logger = logging.getLogger(__name__)
 
 
 class AIBridgeService:
@@ -27,7 +30,7 @@ class AIBridgeService:
 
     def generate_question(self, job_title):
 
-        print(f"Generating AI question for {job_title}")
+        logger.info("Generating AI question for %s", job_title)
 
         return {
             "success": True,
@@ -40,7 +43,7 @@ class AIBridgeService:
 
     def speech_to_text(self, audio_file):
 
-        print("Converting speech to text...")
+        logger.info("Converting speech to text...")
 
         return {"success": True, "transcript": "This is a simulated transcript."}
 
@@ -50,7 +53,7 @@ class AIBridgeService:
 
     def text_to_speech(self, text, voice="Female"):
 
-        print(f"Generating speech using {voice} voice...")
+        logger.info("Generating speech using %s voice...", voice)
 
         return {"success": True, "audio_url": "/fake/audio/output.mp3"}
 
@@ -60,26 +63,24 @@ class AIBridgeService:
 
     def trigger_call(self, phone_number, language="English", voice="Female"):
 
-        print("=" * 50)
-        print("Starting AI Voice Call")
-        print("Phone:", phone_number)
-        print("Language:", language)
-        print("Voice:", voice)
-        print("=" * 50)
+        logger.info(
+            "Starting AI Voice Call | Phone: %s | Language: %s | Voice: %s",
+            phone_number,
+            language,
+            voice,
+        )
 
         time.sleep(2)
 
         return {"success": True, "call_id": random.randint(10000, 99999)}
-        # -------------------------------
 
+    # -------------------------------
     # Start AI Interview
     # -------------------------------
 
     def start_interview(self, interview):
 
-        print("=" * 50)
-        print("Starting AI Interview")
-        print("Interview ID:", interview.id)
+        logger.info("Starting AI Interview | Interview ID: %s", interview.id)
 
         candidate = interview.application.candidate
 
@@ -96,8 +97,7 @@ class AIBridgeService:
 
         if call["success"]:
 
-            print("Call Started")
-            print("Call ID:", call["call_id"])
+            logger.info("Call Started | Call ID: %s", call["call_id"])
 
             return True
 

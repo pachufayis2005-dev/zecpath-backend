@@ -1,3 +1,5 @@
+import logging
+
 from celery import shared_task
 
 from core.services import ReminderService
@@ -6,10 +8,12 @@ from core.services.application_service import send_email_notification
 
 from .models import InterviewCall, ReminderLog
 
+logger = logging.getLogger(__name__)
+
 
 @shared_task
 def test_task():
-    print("Celery is Working!")
+    logger.info("Celery is Working!")
     return "Success"
 
 
@@ -32,7 +36,7 @@ def process_interview_calls():
 
     for interview in queued_calls:
 
-        print(f"\nProcessing Interview #{interview.id}")
+        logger.info("Processing Interview #%s", interview.id)
 
         interview.status = InterviewCall.IN_PROGRESS
         interview.save()
@@ -46,7 +50,7 @@ def process_interview_calls():
 
         interview.save()
 
-        print(f"Interview {interview.id} -> {interview.status}")
+        logger.info("Interview %s -> %s", interview.id, interview.status)
 
     return "Interview Processing Finished"
 

@@ -1,3 +1,5 @@
+import logging
+
 from django.utils import timezone
 
 from core.models import (
@@ -8,6 +10,8 @@ from core.services.application_service import (
     interview_day_before_template,
     interview_hour_before_template,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ReminderService:
@@ -45,11 +49,11 @@ class ReminderService:
                 interview.slot.start_time,
             )
 
-        print("=" * 50)
-        print("Reminder Email")
-        print(subject)
-        print(message)
-        print("=" * 50)
+        logger.info(
+            "Sending reminder email | Interview ID: %s | Subject: %s",
+            interview.id,
+            subject,
+        )
 
         ReminderLog.objects.create(
             interview=interview,
