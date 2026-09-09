@@ -148,11 +148,7 @@ After=network.target
 User=ec2-user
 Group=ec2-user
 WorkingDirectory=/home/ec2-user/zecpath-backend
-ExecStart=/home/ec2-user/zecpath-backend/venv/bin/gunicorn \
-    --workers 2 \
-    --bind 127.0.0.1:8000 \
-    backend.wsgi:application
-
+ExecStart=/home/ec2-user/zecpath-backend/venv/bin/gunicorn --bind 127.0.0.1:8000 backend.wsgi
 Restart=always
 
 [Install]
