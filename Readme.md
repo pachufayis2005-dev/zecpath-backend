@@ -2,8 +2,8 @@
 
 Zecpath is a Django REST Framework backend for an AI-assisted job portal that connects **candidates** and **employers**, with automated resume screening and interview scoring built in.
 
-Live API (deployed on AWS EC2): `http://<your-server-ip>/` — *replace with your domain/IP or leave blank if not public-facing*
-API Docs (Swagger / drf-spectacular): `http://<your-server-ip>/api/docs/` — *replace with your actual docs URL*
+Live API (deployed on AWS EC2): `http://zecpath-fayis.duckdns.org/`
+API Docs (Swagger / drf-spectacular): `http://zecpath-fayis.duckdns.org/api/docs/`
 
 ---
 
@@ -16,7 +16,7 @@ API Docs (Swagger / drf-spectacular): `http://<your-server-ip>/api/docs/` — *r
 - **Payments** — Razorpay integration for premium features, with signature verification
 - **Cloud File Storage** — Resumes stored securely on AWS S3 (private bucket, presigned URLs, least-privilege IAM user)
 - **Production-Grade Data Layer** — PostgreSQL with connection pooling, Redis-based query caching, and automated daily backups with tested restore procedures
-- **Tested** — 17 automated tests covering signup, job posting, AI interview scoring, and payments
+- **Tested** — 21 automated tests covering signup, job posting, AI interview scoring, and payments
 
 ---
 
@@ -26,7 +26,7 @@ API Docs (Swagger / drf-spectacular): `http://<your-server-ip>/api/docs/` — *r
 |---|---|
 | Language | Python |
 | Framework | Django, Django REST Framework |
-| Database | PostgreSQL (production), SQLite (local dev) |
+| Database | PostgreSQL (both production and local dev) |
 | Caching | Redis |
 | Auth | JWT (simplejwt) |
 | Cloud Storage | AWS S3 (django-storages, boto3) |
@@ -42,16 +42,20 @@ API Docs (Swagger / drf-spectacular): `http://<your-server-ip>/api/docs/` — *r
 zecpath-backend/
 ├── core/
 │   ├── models.py          # User, Candidate, Employer, Job, Application, SavedJob
-│   ├── utils.py            # Resume parsing & ATS scoring logic
-│   ├── permissions.py      # Custom DRF permissions (e.g. IsCandidate)
+│   ├── utils.py             # Resume parsing & ATS scoring logic
+│   ├── tasks.py              # Celery background tasks (interviews, reminders, emails)
+│   └── services/
+│       ├── ai_bridge.py            # AI interview simulation service
+│       ├── application_service.py  # Email notifications, shortlisting logic
+│       └── reminder_service.py     # Interview reminder scheduling
 │   └── views/
 │       ├── resume.py        # Resume upload & ATS parsing API
 │       └── ...
 ├── manage.py
 ├── requirements.txt
+├── LICENSE
 └── README.md
 ```
-*(Update this tree if your actual folder names differ.)*
 
 ---
 
@@ -69,8 +73,7 @@ source venv/bin/activate      # on Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Copy environment variables template and fill in your own values
-cp .env.example .env
+# Create a .env file (see Environment Variables below)
 
 # Run migrations
 python manage.py migrate
@@ -81,19 +84,29 @@ python manage.py runserver
 
 ### Environment Variables
 
-Create a `.env` file with (see `.env.example`):
+Create a `.env` file in the project root with:
 
 ```
 SECRET_KEY=your-django-secret-key
 DEBUG=True
-DATABASE_URL=postgres://user:password@localhost:5432/zecpath_db
-REDIS_URL=redis://localhost:6379/1
+
+DB_NAME=your-local-db-name
+DB_USER=your-local-db-user
+DB_PASSWORD=your-local-db-password
+DB_HOST=127.0.0.1
+DB_PORT=5432
+
 AWS_ACCESS_KEY_ID=your-aws-key
 AWS_SECRET_ACCESS_KEY=your-aws-secret
 AWS_STORAGE_BUCKET_NAME=your-s3-bucket
+AWS_S3_REGION_NAME=ap-south-1
+
 RAZORPAY_KEY_ID=your-razorpay-key
 RAZORPAY_KEY_SECRET=your-razorpay-secret
+RAZORPAY_WEBHOOK_SECRET=your-razorpay-webhook-secret
 ```
+
+Note: A local PostgreSQL server must be running, and the `DB_USER` needs `CREATEDB` privilege to run the test suite (Django creates a temporary test database).
 
 ---
 
@@ -103,23 +116,29 @@ RAZORPAY_KEY_SECRET=your-razorpay-secret
 python manage.py test
 ```
 
-All 17 tests (signup, job posting, AI interview flow, and payment verification) pass against PostgreSQL.
+All 21 tests (signup, job posting, AI interview flow, and payment verification) pass against PostgreSQL.
+
+---
+
+## Logging
+
+Application activity (interview processing, email notifications, reminders) is logged via Python's `logging` module:
+- `logs/django_app.log` — INFO level and above (routine activity)
+- `logs/django_errors.log` — ERROR level and above (failures)
 
 ---
 
 ## Deployment
 
-Deployed on an AWS EC2 instance (Amazon Linux) with:
+Deployed on an AWS EC2 instance (Amazon Linux 2023) with:
 - **Gunicorn** running as a systemd service (auto-restarts on crash/reboot)
 - **Nginx** as a reverse proxy
 - **PostgreSQL** as the production database, with Redis for query caching
-- Daily automated backups via a cron job (`pg_dump`, 7-day retention)
+- Daily automated backups via a cron job (`pg_dump`, 7-day retention, tested restore procedure)
 
 ---
 
 ## API Documentation
-
-For detailed authentication flow, all endpoints, error codes, and rate limits, see the [API Developer Guide](docs/API_GUIDE.md).
 
 Interactive API docs are auto-generated with drf-spectacular and available at `/api/docs/` once the server is running.
 
